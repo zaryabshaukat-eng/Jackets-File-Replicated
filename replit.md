@@ -1,45 +1,62 @@
-# [Project name]
+# Universal Jackets — Shopify Theme
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A modern, animated Shopify theme for Universal Jackets — premium outerwear. Pure Liquid/CSS/JS — no React, no Tailwind. GitHub-deployable to Shopify.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- No dev server needed — this is a static Shopify theme
+- Theme files live in `shopify-theme/`
+- See `shopify-theme/README.md` for full deployment instructions
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Shopify Liquid (templating)
+- Vanilla CSS with CSS custom properties (no framework)
+- Vanilla JavaScript (no dependencies, ES6+)
+- Google Fonts: Cormorant Garamond (headings) + Inter (body)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `shopify-theme/layout/theme.liquid` — Master layout
+- `shopify-theme/assets/main.css` — All styles (~65KB, comprehensive)
+- `shopify-theme/assets/main.js` — All JavaScript (~25KB)
+- `shopify-theme/sections/` — All page sections (announcement bar, header, hero, etc.)
+- `shopify-theme/snippets/product-card.liquid` — Reusable product card snippet
+- `shopify-theme/templates/` — Page templates (product, collection, blog, article, cart, etc.)
+- `shopify-theme/config/settings_schema.json` — Theme editor settings
+- `shopify-theme/locales/en.default.json` — Translations
 
-## Architecture decisions
+## Theme Features
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Announcement bar with sparkle animation and 3 rotating messages
+- Sticky header: Logo + Search (with live autocomplete) + 3-dot menu + Cart badge
+- Mobile: Nav bar drops to bottom of screen on scroll (same icons)
+- Hero carousel: fullscreen, auto-plays, touch-swipe, ken-burns zoom
+- Recommended products: horizontal slider, auto-scrolls every 10s
+- All Products gallery: price range slider, color swatches, size buttons — left sidebar on desktop, slide-up drawer on mobile
+- Grid/List view toggle, pagination (desktop), Load More (mobile)
+- Two infinite marquee rows (Featured → left, New Arrivals ← right)
+- Custom design upload form with drag & drop
+- Blog/Journal preview section
+- Trust bar + full footer with 4 link columns
+- AJAX add to cart on product cards and product page
+- Product page: image gallery, variant swatches, size buttons, rating, quantity, accordions
+- Split-panel auth pages (login, register, forgot password)
+- Full SEO: JSON-LD schema, Open Graph, canonical URLs
 
-## Product
+## Deploying to Shopify
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+1. Push `shopify-theme/` folder contents to a GitHub repo
+2. In Shopify Admin → Online Store → Themes → Add theme → Connect from GitHub
+3. Publish — theme editor lets you customize all content without touching code
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- No React, no Tailwind — Shopify-compatible Liquid/CSS/JS only
+- Modern, stylish design with animations
+- Mobile-friendly with sticky bottom nav bar on scroll
+- Products available on main homepage and individual product pages with filter options
 
 ## Pointers
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- See `shopify-theme/README.md` for detailed deployment and product setup instructions

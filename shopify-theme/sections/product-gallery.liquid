@@ -1,0 +1,194 @@
+{% schema %}
+{
+  "name": "Product Gallery",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "All Products" },
+    { "type": "collection", "id": "collection", "label": "Collection (leave blank for all)" }
+  ]
+}
+{% endschema %}
+
+<section class="product-gallery section-spacing" id="productGallery">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Our Collection</p>
+      <h2 class="section-title">{{ section.settings.heading }}</h2>
+    </div>
+
+    <div class="product-gallery__layout">
+
+      <!-- DESKTOP: Left Filters -->
+      <aside class="product-gallery__filters desktop-filters" id="desktopFilters" aria-label="Product filters">
+        <div class="filter-group">
+          <h3 class="filter-group__title">Price Range</h3>
+          <div class="price-range-slider">
+            <div class="price-range-slider__track">
+              <div class="price-range-slider__fill" id="priceRangeFill"></div>
+              <input type="range" class="price-range-slider__input price-range-slider__input--min" id="priceMin" min="0" max="500" value="0" step="5" aria-label="Minimum price">
+              <input type="range" class="price-range-slider__input price-range-slider__input--max" id="priceMax" min="0" max="500" value="500" step="5" aria-label="Maximum price">
+            </div>
+            <div class="price-range-slider__values">
+              <span id="priceMinVal">$0</span>
+              <span id="priceMaxVal">$500</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-group__title">Color</h3>
+          <div class="filter-colors" id="filterColors">
+            <button class="color-swatch color-swatch--active" data-color="" style="background:#ffffff;border:1.5px solid #ccc;" title="All Colors" aria-label="All Colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="color-swatch" data-color="Black" style="background:#0a0a0a;" title="Black" aria-label="Black"></button>
+            <button class="color-swatch" data-color="Brown" style="background:#6B3E26;" title="Brown" aria-label="Brown"></button>
+            <button class="color-swatch" data-color="Navy" style="background:#0B1F3C;" title="Navy" aria-label="Navy"></button>
+            <button class="color-swatch" data-color="Olive" style="background:#5C5C3D;" title="Olive" aria-label="Olive"></button>
+            <button class="color-swatch" data-color="Grey" style="background:#6B6B6B;" title="Grey" aria-label="Grey"></button>
+            <button class="color-swatch" data-color="Camel" style="background:#C8A96E;" title="Camel" aria-label="Camel"></button>
+            <button class="color-swatch" data-color="Red" style="background:#8B1C1C;" title="Red" aria-label="Red"></button>
+            <button class="color-swatch" data-color="White" style="background:#f5f5f5;border:1.5px solid #ddd;" title="White" aria-label="White"></button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-group__title">Size</h3>
+          <div class="filter-sizes" id="filterSizes">
+            <button class="size-btn size-btn--active" data-size="">All</button>
+            <button class="size-btn" data-size="XS">XS</button>
+            <button class="size-btn" data-size="S">S</button>
+            <button class="size-btn" data-size="M">M</button>
+            <button class="size-btn" data-size="L">L</button>
+            <button class="size-btn" data-size="XL">XL</button>
+            <button class="size-btn" data-size="XXL">XXL</button>
+          </div>
+        </div>
+
+        <button class="btn-clear-filters" id="clearFiltersDesktop">Clear All Filters</button>
+      </aside>
+
+      <!-- Main products column -->
+      <div class="product-gallery__main">
+
+        <!-- MOBILE: Top filter bar -->
+        <div class="mobile-filter-bar mobile-only">
+          <button class="mobile-filter-bar__btn" id="mobileFilterOpen" aria-expanded="false" aria-controls="mobileFilterDrawer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
+            Filter
+          </button>
+          <div class="mobile-view-toggle">
+            <button class="view-toggle-btn view-toggle-btn--active" data-view="grid" aria-label="Grid view">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </button>
+            <button class="view-toggle-btn" data-view="list" aria-label="List view">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Desktop view toggle (top right of grid) -->
+        <div class="desktop-view-toggle desktop-only">
+          <span class="view-label">View:</span>
+          <button class="view-toggle-btn view-toggle-btn--active" data-view="grid" aria-label="Grid view">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-toggle-btn" data-view="list" aria-label="List view">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="productsGrid" data-view="grid">
+          {%- assign gallery_collection = collections[section.settings.collection.handle] | default: collections.all -%}
+          {%- assign gallery_products = gallery_collection.products | sort: 'published_at' | reverse -%}
+          {%- assign gallery_count = 0 -%}
+          {%- for product in gallery_products limit: 20 -%}
+            {%- assign gallery_count = gallery_count | plus: 1 -%}
+            {%- render 'product-card', product: product -%}
+          {%- endfor -%}
+          {%- if gallery_count == 0 -%}
+            {%- for i in (1..8) -%}
+              <div class="product-card product-card--placeholder">
+                <div class="product-card__image-wrap">
+                  <div class="product-card__placeholder-img"></div>
+                </div>
+                <div class="product-card__info">
+                  <p class="product-card__title">Jacket Style {{ i }}</p>
+                  <p class="product-card__price">$149.00</p>
+                </div>
+              </div>
+            {%- endfor -%}
+          {%- endif -%}
+        </div>
+
+        <!-- Mobile: Load More / Desktop: Pagination -->
+        <div class="mobile-only">
+          <div id="loadMoreWrapper" class="load-more-wrapper">
+            <button class="btn-load-more" id="loadMoreBtn">Load More Products</button>
+          </div>
+        </div>
+        <div class="desktop-only">
+          {%- paginate gallery_collection.products by 20 -%}
+            {%- render 'pagination', paginate: paginate -%}
+          {%- endpaginate -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mobile Filter Drawer -->
+<div class="mobile-filter-drawer" id="mobileFilterDrawer" aria-hidden="true">
+  <div class="mobile-filter-drawer__backdrop" id="mobileFilterBackdrop"></div>
+  <div class="mobile-filter-drawer__panel">
+    <div class="mobile-filter-drawer__header">
+      <h3>Filters</h3>
+      <button id="mobileFilterClose" aria-label="Close filters">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="mobile-filter-drawer__body">
+      <div class="filter-group">
+        <h4 class="filter-group__title">Price Range</h4>
+        <div class="price-range-slider">
+          <div class="price-range-slider__track">
+            <div class="price-range-slider__fill" id="mPriceRangeFill"></div>
+            <input type="range" class="price-range-slider__input price-range-slider__input--min" id="mPriceMin" min="0" max="500" value="0" step="5" aria-label="Minimum price">
+            <input type="range" class="price-range-slider__input price-range-slider__input--max" id="mPriceMax" min="0" max="500" value="500" step="5" aria-label="Maximum price">
+          </div>
+          <div class="price-range-slider__values"><span id="mPriceMinVal">$0</span><span id="mPriceMaxVal">$500</span></div>
+        </div>
+      </div>
+      <div class="filter-group">
+        <h4 class="filter-group__title">Color</h4>
+        <div class="filter-colors" id="mFilterColors">
+          <button class="color-swatch color-swatch--active" data-color="" style="background:#ffffff;border:1.5px solid #ccc;" title="All Colors" aria-label="All Colors"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <button class="color-swatch" data-color="Black" style="background:#0a0a0a;" title="Black" aria-label="Black"></button>
+          <button class="color-swatch" data-color="Brown" style="background:#6B3E26;" title="Brown" aria-label="Brown"></button>
+          <button class="color-swatch" data-color="Navy" style="background:#0B1F3C;" title="Navy" aria-label="Navy"></button>
+          <button class="color-swatch" data-color="Olive" style="background:#5C5C3D;" title="Olive" aria-label="Olive"></button>
+          <button class="color-swatch" data-color="Grey" style="background:#6B6B6B;" title="Grey" aria-label="Grey"></button>
+          <button class="color-swatch" data-color="Camel" style="background:#C8A96E;" title="Camel" aria-label="Camel"></button>
+          <button class="color-swatch" data-color="Red" style="background:#8B1C1C;" title="Red" aria-label="Red"></button>
+          <button class="color-swatch" data-color="White" style="background:#f5f5f5;border:1.5px solid #ddd;" title="White" aria-label="White"></button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <h4 class="filter-group__title">Size</h4>
+        <div class="filter-sizes" id="mFilterSizes">
+          <button class="size-btn size-btn--active" data-size="">All</button>
+          <button class="size-btn" data-size="XS">XS</button>
+          <button class="size-btn" data-size="S">S</button>
+          <button class="size-btn" data-size="M">M</button>
+          <button class="size-btn" data-size="L">L</button>
+          <button class="size-btn" data-size="XL">XL</button>
+          <button class="size-btn" data-size="XXL">XXL</button>
+        </div>
+      </div>
+    </div>
+    <div class="mobile-filter-drawer__footer">
+      <button class="btn-clear-filters" id="clearFiltersMobile">Clear All</button>
+      <button class="btn-apply-filters" id="applyFiltersMobile">Apply Filters</button>
+    </div>
+  </div>
+</div>

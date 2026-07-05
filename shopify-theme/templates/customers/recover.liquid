@@ -1,0 +1,43 @@
+<div class="auth-page">
+  <div class="auth-page__split">
+    <div class="auth-page__deco" aria-hidden="true">
+      <div class="auth-page__deco-inner">
+        <span class="auth-deco__logo">UNIVERSAL JACKETS</span>
+        <p class="auth-deco__quote">"We've got you covered."</p>
+        <div class="auth-deco__shapes">
+          <div class="auth-deco__circle auth-deco__circle--1"></div>
+          <div class="auth-deco__circle auth-deco__circle--2"></div>
+          <div class="auth-deco__circle auth-deco__circle--3"></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-page__form-panel">
+      <div class="auth-page__form-inner">
+        <a href="{{ routes.account_login_url }}" class="auth-page__back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Sign In
+        </a>
+        <h1 class="auth-page__title">Reset Password</h1>
+        <p class="auth-page__sub">Enter your email address and we'll send you a link to reset your password.</p>
+
+        {%- form 'recover_customer_password' -%}
+          {%- if form.posted_successfully? -%}
+            <div class="form-success" role="alert">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              We've sent you an email with a link to reset your password.
+            </div>
+          {%- endif -%}
+          {%- if form.errors -%}
+            <div class="form-error">{{ form.errors | default_errors }}</div>
+          {%- endif -%}
+
+          <div class="form-field">
+            <label for="RecoverEmail" class="form-label">Email address</label>
+            <input type="email" name="email" id="RecoverEmail" autocomplete="email" class="form-input" placeholder="you@example.com" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Send Reset Link</button>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</div>

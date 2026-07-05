@@ -1,0 +1,10 @@
+{
+  "current": {
+    "color_primary": "#C8A96E",
+    "color_background": "#ffffff",
+    "color_text": "#0a0a0a",
+    "font_heading": "cormorant_garamond_n4",
+    "font_body": "inter_n4"
+  },
+  "presets": {}
+}

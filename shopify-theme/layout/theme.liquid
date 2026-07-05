@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{ page_description | default: shop.description | escape }}">
+  <meta name="keywords" content="{{ page_keywords | escape }}">
+  <meta property="og:title" content="{{ page_title | default: shop.name | escape }}">
+  <meta property="og:description" content="{{ page_description | default: shop.description | escape }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta property="og:image" content="{{ settings.og_image | img_url: '1200x630' }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="{{ canonical_url }}">
+  <title>{{ page_title | default: shop.name }} | {{ shop.name }}</title>
+
+  {{ content_for_header }}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  {{ 'main.css' | asset_url | stylesheet_tag }}
+
+  <script>
+    window.Shopify = window.Shopify || {};
+    window.shopUrl = "{{ shop.url }}";
+    window.cartToken = "{{ cart.token }}";
+    window.customerLoggedIn = {{ customer != nil | json }};
+  </script>
+</head>
+<body class="template-{{ template.name }} {% if template.suffix %}template-{{ template.name }}-{{ template.suffix }}{% endif %}">
+
+  {%- section 'announcement-bar' -%}
+  {%- section 'header' -%}
+
+  <main id="main-content" role="main" tabindex="-1">
+    {{ content_for_layout }}
+  </main>
+
+  {%- section 'footer' -%}
+
+  <!-- Mobile bottom nav bar (visible on scroll on mobile) -->
+  <div class="mobile-bottom-bar" id="mobileBottomBar">
+    <a href="{{ shop.url }}" class="mobile-bottom-bar__item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    <button class="mobile-bottom-bar__item" id="mobileSearchToggle">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+    </button>
+    <button class="mobile-bottom-bar__item" id="mobileMenuToggleBottom">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      <span>Menu</span>
+    </button>
+    <a href="{{ routes.cart_url }}" class="mobile-bottom-bar__item">
+      <span class="cart-icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        {%- if cart.item_count > 0 -%}
+          <span class="cart-count">{{ cart.item_count }}</span>
+        {%- endif -%}
+      </span>
+      <span>Cart</span>
+    </a>
+  </div>
+
+  <!-- Mobile Search Overlay -->
+  <div class="search-overlay" id="searchOverlay">
+    <div class="search-overlay__inner">
+      <form action="{{ routes.search_url }}" method="get" class="search-overlay__form">
+        <input type="hidden" name="type" value="product">
+        <input type="search" name="q" placeholder="Search products..." class="search-overlay__input" id="searchInput" autocomplete="off">
+        <button type="submit" class="search-overlay__submit">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </form>
+      <div class="search-overlay__results" id="searchResults"></div>
+      <button class="search-overlay__close" id="searchClose">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  {{ 'main.js' | asset_url | script_tag }}
+</body>
+</html>

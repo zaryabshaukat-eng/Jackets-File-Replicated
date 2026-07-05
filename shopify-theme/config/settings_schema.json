@@ -1,0 +1,79 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Universal Jackets",
+    "theme_version": "1.0.0",
+    "theme_author": "Universal Jackets",
+    "theme_documentation_url": "",
+    "theme_support_url": "mailto:digitalsolutionsunctx@gmail.com"
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      {
+        "type": "color",
+        "id": "color_primary",
+        "label": "Primary accent color",
+        "default": "#C8A96E"
+      },
+      {
+        "type": "color",
+        "id": "color_background",
+        "label": "Page background",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "color_text",
+        "label": "Body text",
+        "default": "#0a0a0a"
+      }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "font_picker",
+        "id": "font_heading",
+        "label": "Heading font",
+        "default": "cormorant_garamond_n4"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_body",
+        "label": "Body font",
+        "default": "inter_n4"
+      }
+    ]
+  },
+  {
+    "name": "Social Media",
+    "settings": [
+      { "type": "url", "id": "social_instagram", "label": "Instagram" },
+      { "type": "url", "id": "social_facebook", "label": "Facebook" },
+      { "type": "url", "id": "social_tiktok", "label": "TikTok" },
+      { "type": "url", "id": "social_pinterest", "label": "Pinterest" }
+    ]
+  },
+  {
+    "name": "SEO",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "og_image",
+        "label": "Default social sharing image"
+      }
+    ]
+  },
+  {
+    "name": "Favicon",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon"
+      }
+    ]
+  }
+]

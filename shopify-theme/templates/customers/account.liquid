@@ -1,0 +1,72 @@
+<div class="account-page">
+  <div class="container">
+    <div class="account-page__header">
+      <h1 class="account-page__title">My Account</h1>
+      <a href="{{ routes.account_logout_url }}" class="btn btn-outline btn-sm">Sign Out</a>
+    </div>
+
+    <div class="account-page__layout">
+      <!-- Sidebar nav -->
+      <aside class="account-sidebar">
+        <div class="account-sidebar__profile">
+          <div class="account-avatar">{{ customer.first_name | slice: 0 | upcase }}</div>
+          <div>
+            <p class="account-sidebar__name">{{ customer.name }}</p>
+            <p class="account-sidebar__email">{{ customer.email }}</p>
+          </div>
+        </div>
+        <nav class="account-nav">
+          <a href="{{ routes.account_url }}" class="account-nav__link is-active">Order History</a>
+          <a href="{{ routes.account_addresses_url }}" class="account-nav__link">Addresses</a>
+          <a href="{{ shop.url }}/collections/all" class="account-nav__link">Shop</a>
+          <a href="{{ routes.account_logout_url }}" class="account-nav__link account-nav__link--logout">Sign Out</a>
+        </nav>
+      </aside>
+
+      <!-- Main content -->
+      <div class="account-main">
+        <h2 class="account-section__title">Order History</h2>
+
+        {%- if customer.orders.size > 0 -%}
+          <div class="orders-table-wrap">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {%- for order in customer.orders -%}
+                  <tr class="orders-table__row">
+                    <td class="orders-table__order-num">
+                      <a href="{{ order.customer_url }}">{{ order.name }}</a>
+                    </td>
+                    <td>{{ order.created_at | date: '%b %d, %Y' }}</td>
+                    <td>
+                      <span class="order-status order-status--{{ order.financial_status }}">{{ order.financial_status_label }}</span>
+                    </td>
+                    <td>{{ order.total_price | money }}</td>
+                    <td>
+                      <a href="{{ order.customer_url }}" class="btn btn-outline btn-sm">View</a>
+                    </td>
+                  </tr>
+                {%- endfor -%}
+              </tbody>
+            </table>
+          </div>
+        {%- else -%}
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <h3>No orders yet</h3>
+            <p>When you place an order, it will appear here.</p>
+            <a href="{{ shop.url }}/collections/all" class="btn btn-primary">Start Shopping</a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>

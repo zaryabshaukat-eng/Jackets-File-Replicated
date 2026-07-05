@@ -1,0 +1,38 @@
+Create a shopify theme website all the files will be standard html and css javascript or whatever Shopify accepts only no react or tailwind only coding will be that is accepted by shopify only so  iw ill connect this project to github and connect that github to shopify so in my website
+at the top it will be a very thin black line with white text sparkling saying Free shipping on shopping over 120$ and text has some space and separated by "|" this separator and than new sales available than again "|" separator saying Let's Dive in to Sale
+under that a Nav bar on which at starting Left will be written UNIVERSAL JACKETS than a Search box than a unique menu three dots that are more visible and unique styles after that cart option and this nav bar will be mobile friendly when opened on mobile it will Universal Jackets than a Search Bar Style magnifying glass when on mobile size screen than menu dots and than cart option remember when scree is scrolled and top nav bar is not visible on mobile it will shift to bottom mobile screen while on desktop website it will stick to the top
+under that its a hero carousel auto changing images a nice exciting slider
+under that a row recomended products moving products will be continously changing after only 10 seconds there will be 20 products from all products at first which user can slider on mobile and with slider button on desktop website
+under that all products 20 proucts in a gallery view there will be a filter in products gallery section and filter will be on left for price rang , under that according to color, under that filter by size these filters will be on left on desktop site while on mobile it will on top a row with a filter option that will open a slide menu with these filters and on both windows and mobile next to filter in a small row stype there will be option to change products view from one under one or a gallery style while on main page there will always an option load more on mobile and pagination on desktop site
+under that Marquee row of featured products thats is sliding products slowly from left to right under that same Marquee row of new products thats is sliding products slowly from right to left 
+under that an option to custom upload a design option with option of of contact details of product colour sizing and image to submit
+under that an image on right with text on left for blog purpose
+under that footer section  these details FREE DELIVERY on all orders over $120 "|" 7 DAYS RETURN If goods have problems "|" SECURE PAYMENT  100% secure payment "|" 24/7 SUPPORT Dedicated support Capital letters will be main and in thos footer section for these and small will be sub heading and withpictures in these text acording to commands
+
+UNIVERSAL JACKETS
+
+Universal Jackets — premium outerwear, made to be worn.
+
+120 Mercer St, New York, NY 10012
++1 (212) 555-0142
+digitalsolutionsunctx@gmail.com
+Quick Links
+
+New In
+Bestsellers
+Lookbook
+Customer Support
+
+Contact
+Shipping
+Returns
+Explore
+
+About
+Journal
+Custom
+
+all these links in footer should have there own pages and all links must on new pages
+while in section products will have option of view product and add to cart options with price tag and with striped as orignal price vs discounted when click on view product or product image on both mobile and desktop site products must open on a page with complete details of the product name orignal price how many sold star rating and all the details of that product while adding to cart colour size must be selected product can be directly added to cart by selecting color and size on click add to cart  website should also have a page for blog and article where we will add material for SEO
+
+this website should be according to shopify theme and liquid files and must be super SEO Friendly all there must be a customer or admin login where customer login wil be customer login with all customer login features and admin will have access to admin privilege's admin acces details are Email: zaryabshaukat@gmail.com Password: "@Credit123"  which have the ability to change from top thin bar to nav bar section products every details in footer every text everywhere every image and adding products must contain add product and also add category and sub category menu in nave bar menu option remember when on desktop nav bar with logo , search box,  menu (having product categories with sub categories) and cart option on mobile these must be logo  search bar image of magnifying glass which on click open box to type and if a matching product include that details they will be shown in product section gallery when cleared again random products from all categories and subcategories when scrolled down on mobile the nav bar will be moved down to bottom this website should be desktop and mobile friendly these products can be easily uploaded by shopify from add product option or from admin access both only files will be created that are accepted by shopify so this website will be uploaded as a theme on shopify

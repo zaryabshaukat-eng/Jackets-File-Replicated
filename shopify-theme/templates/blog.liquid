@@ -1,0 +1,55 @@
+<div class="blog-page">
+  <div class="page-hero">
+    <div class="container">
+      <p class="section-label">Journal</p>
+      <h1 class="page-hero__title">{{ blog.title }}</h1>
+      {%- if blog.articles_count > 0 -%}
+        <p class="page-hero__meta">{{ blog.articles_count }} articles</p>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="container">
+    {%- paginate blog.articles by 9 -%}
+      {%- if blog.articles.size > 0 -%}
+        <div class="blog-grid">
+          {%- for article in blog.articles -%}
+            <article class="blog-article-card" itemscope itemtype="https://schema.org/BlogPosting">
+              {%- if article.image -%}
+                <a href="{{ article.url }}" class="blog-article-card__img-wrap">
+                  <img src="{{ article.image | img_url: '800x500', crop: 'center' }}" alt="{{ article.title | escape }}" loading="lazy" class="blog-article-card__img" itemprop="image">
+                </a>
+              {%- else -%}
+                <a href="{{ article.url }}" class="blog-article-card__img-wrap blog-article-card__img-wrap--placeholder"></a>
+              {%- endif -%}
+              <div class="blog-article-card__body">
+                <div class="blog-article-card__meta">
+                  <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}" itemprop="datePublished">{{ article.published_at | date: '%B %d, %Y' }}</time>
+                  {%- if article.author -%}
+                    <span>· {{ article.author }}</span>
+                  {%- endif -%}
+                </div>
+                <h2 class="blog-article-card__title" itemprop="headline">
+                  <a href="{{ article.url }}">{{ article.title }}</a>
+                </h2>
+                <p class="blog-article-card__excerpt" itemprop="description">{{ article.excerpt_or_content | strip_html | truncate: 150 }}</p>
+                <a href="{{ article.url }}" class="blog-article-card__link">
+                  Read Article
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+              </div>
+            </article>
+          {%- endfor -%}
+        </div>
+        {%- render 'pagination', paginate: paginate -%}
+      {%- else -%}
+        <div class="empty-state">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <h2>No articles yet</h2>
+          <p>Check back soon for style guides and brand stories.</p>
+          <a href="{{ shop.url }}" class="btn btn-primary">Return Home</a>
+        </div>
+      {%- endif -%}
+    {%- endpaginate -%}
+  </div>
+</div>

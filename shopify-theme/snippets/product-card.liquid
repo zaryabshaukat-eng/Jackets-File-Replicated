@@ -1,0 +1,123 @@
+{% comment %}
+  Parameters:
+    - product: {Object} Shopify product object (required)
+    - card_class: {String} Extra CSS class (optional)
+{% endcomment %}
+
+{%- liquid
+  assign product_url = product.url
+  assign first_image = product.featured_image
+  assign second_image = product.images[1]
+  assign price = product.price | money
+  assign compare_price = product.compare_at_price | money
+  assign on_sale = false
+  if product.compare_at_price > product.price
+    assign on_sale = true
+  endif
+-%}
+
+<article class="product-card {% if card_class %}{{ card_class }}{% endif %}"
+  data-product-id="{{ product.id }}"
+  data-colors="{% for variant in product.variants %}{% if variant.option1 %}{{ variant.option1 }} {% endif %}{% endfor %}"
+  data-sizes="{% for variant in product.variants %}{% if variant.option2 %}{{ variant.option2 }} {% endif %}{% endfor %}"
+  data-price="{{ product.price | divided_by: 100 }}"
+  itemscope itemtype="https://schema.org/Product">
+
+  <div class="product-card__image-wrap">
+    <a href="{{ product_url }}" class="product-card__img-link" aria-label="View {{ product.title | escape }}">
+      {%- if first_image -%}
+        <img
+          src="{{ first_image | img_url: '600x750', crop: 'center' }}"
+          srcset="{{ first_image | img_url: '400x500', crop: 'center' }} 400w, {{ first_image | img_url: '600x750', crop: 'center' }} 600w"
+          sizes="(max-width: 600px) 50vw, 280px"
+          alt="{{ first_image.alt | default: product.title | escape }}"
+          loading="lazy"
+          width="600"
+          height="750"
+          class="product-card__img product-card__img--primary"
+          itemprop="image">
+        {%- if second_image -%}
+          <img
+            src="{{ second_image | img_url: '600x750', crop: 'center' }}"
+            alt="{{ second_image.alt | default: product.title | escape }}"
+            loading="lazy"
+            width="600"
+            height="750"
+            class="product-card__img product-card__img--secondary">
+        {%- endif -%}
+      {%- else -%}
+        <div class="product-card__placeholder-img" aria-label="No image available"></div>
+      {%- endif -%}
+    </a>
+
+    <!-- Badges -->
+    <div class="product-card__badges">
+      {%- if on_sale -%}
+        {%- assign discount = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
+        <span class="badge badge--sale">-{{ discount }}%</span>
+      {%- endif -%}
+      {%- if product.tags contains 'new' or product.tags contains 'New' -%}
+        <span class="badge badge--new">New</span>
+      {%- endif -%}
+      {%- unless product.available -%}
+        <span class="badge badge--sold-out">Sold Out</span>
+      {%- endunless -%}
+    </div>
+
+    <!-- Quick actions -->
+    <div class="product-card__actions">
+      <a href="{{ product_url }}" class="product-card__action-btn product-card__view-btn" aria-label="View {{ product.title | escape }}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        View Product
+      </a>
+      <button class="product-card__action-btn product-card__cart-btn"
+        data-product-id="{{ product.id }}"
+        data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+        data-has-options="{% if product.options.size > 1 or product.variants.size > 1 %}true{% else %}false{% endif %}"
+        data-product-url="{{ product_url }}"
+        aria-label="Add {{ product.title | escape }} to cart"
+        {%- unless product.available %} disabled aria-disabled="true"{%- endunless -%}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        {%- if product.available %}Add to Cart{% else %}Sold Out{% endif -%}
+      </button>
+    </div>
+  </div>
+
+  <div class="product-card__info">
+    {%- if product.vendor -%}
+      <p class="product-card__vendor">{{ product.vendor }}</p>
+    {%- endif -%}
+    <h3 class="product-card__title" itemprop="name">
+      <a href="{{ product_url }}">{{ product.title }}</a>
+    </h3>
+
+    <!-- Color swatches preview -->
+    {%- assign color_option_index = 0 -%}
+    {%- for option in product.options -%}
+      {%- if option == 'Color' or option == 'Colour' -%}
+        {%- assign color_option_index = forloop.index0 -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if product.options contains 'Color' or product.options contains 'Colour' -%}
+      <div class="product-card__colors" aria-label="Available colors">
+        {%- for variant in product.variants limit: 6 -%}
+          {%- assign color_val = variant.options[color_option_index] -%}
+          {%- unless seen_colors contains color_val -%}
+            <span class="product-card__color-dot" title="{{ color_val }}" aria-label="{{ color_val }}"></span>
+          {%- endunless -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    <div class="product-card__price-row" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+      <link itemprop="availability" href="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}">
+      <meta itemprop="priceCurrency" content="{{ cart.currency.iso_code }}">
+      {%- if on_sale -%}
+        <span class="product-card__price product-card__price--sale" itemprop="price" content="{{ product.price | divided_by: 100.0 }}">{{ price }}</span>
+        <span class="product-card__price product-card__price--compare">{{ compare_price }}</span>
+      {%- else -%}
+        <span class="product-card__price" itemprop="price" content="{{ product.price | divided_by: 100.0 }}">{{ price }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+</article>

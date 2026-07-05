@@ -1,0 +1,38 @@
+{% comment %}
+  Render pagination links
+  Parameters: paginate (object)
+{% endcomment %}
+
+{%- if paginate.pages > 1 -%}
+  <nav class="pagination" role="navigation" aria-label="Pagination">
+    <ul class="pagination__list">
+      {%- if paginate.previous -%}
+        <li class="pagination__item pagination__item--prev">
+          <a href="{{ paginate.previous.url }}" class="pagination__link pagination__link--arrow" aria-label="Previous page">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </a>
+        </li>
+      {%- endif -%}
+
+      {%- for part in paginate.parts -%}
+        <li class="pagination__item">
+          {%- if part.is_link -%}
+            <a href="{{ part.url }}" class="pagination__link">{{ part.title }}</a>
+          {%- elsif part.title == paginate.current_page -%}
+            <span class="pagination__link pagination__link--current" aria-current="page" aria-label="Page {{ part.title }}">{{ part.title }}</span>
+          {%- else -%}
+            <span class="pagination__ellipsis">…</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+
+      {%- if paginate.next -%}
+        <li class="pagination__item pagination__item--next">
+          <a href="{{ paginate.next.url }}" class="pagination__link pagination__link--arrow" aria-label="Next page">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </li>
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- endif -%}

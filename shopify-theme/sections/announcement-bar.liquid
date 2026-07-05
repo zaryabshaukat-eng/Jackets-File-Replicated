@@ -1,0 +1,31 @@
+{% schema %}
+{
+  "name": "Announcement Bar",
+  "settings": [
+    { "type": "text", "id": "message_1", "label": "Message 1", "default": "Free shipping on orders over $120" },
+    { "type": "text", "id": "message_2", "label": "Message 2", "default": "New sales available" },
+    { "type": "text", "id": "message_3", "label": "Message 3", "default": "Let's Dive in to Sale" },
+    { "type": "url",  "id": "sale_link",  "label": "Sale Link" }
+  ]
+}
+{% endschema %}
+
+<div class="announcement-bar" role="complementary" aria-label="Announcement">
+  <div class="announcement-bar__inner">
+    <span class="announcement-bar__item">
+      <span class="sparkle-text">{{ section.settings.message_1 }}</span>
+    </span>
+    <span class="announcement-bar__sep" aria-hidden="true">|</span>
+    <span class="announcement-bar__item">
+      {{ section.settings.message_2 }}
+    </span>
+    <span class="announcement-bar__sep" aria-hidden="true">|</span>
+    <span class="announcement-bar__item">
+      {%- if section.settings.sale_link != blank -%}
+        <a href="{{ section.settings.sale_link }}" class="announcement-bar__link">{{ section.settings.message_3 }}</a>
+      {%- else -%}
+        {{ section.settings.message_3 }}
+      {%- endif -%}
+    </span>
+  </div>
+</div>

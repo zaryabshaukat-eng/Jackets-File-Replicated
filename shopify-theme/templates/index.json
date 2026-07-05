@@ -1,0 +1,81 @@
+{
+  "sections": {
+    "hero-carousel": {
+      "type": "hero-carousel",
+      "blocks": {
+        "slide-1": {
+          "type": "slide",
+          "settings": {
+            "heading": "New Season. New Edge.",
+            "subheading": "Premium jackets crafted for the bold",
+            "cta_text": "Explore Collection",
+            "cta_url": "/collections/all",
+            "text_color": "light"
+          }
+        },
+        "slide-2": {
+          "type": "slide",
+          "settings": {
+            "heading": "Built to Last",
+            "subheading": "From street to summit — outerwear that moves with you",
+            "cta_text": "Shop Now",
+            "cta_url": "/collections/all",
+            "text_color": "light"
+          }
+        },
+        "slide-3": {
+          "type": "slide",
+          "settings": {
+            "heading": "Design Your Jacket",
+            "subheading": "Create a one-of-a-kind statement piece",
+            "cta_text": "Design Yours",
+            "cta_url": "/pages/custom",
+            "text_color": "light"
+          }
+        }
+      },
+      "block_order": ["slide-1", "slide-2", "slide-3"]
+    },
+    "recommended-products": {
+      "type": "recommended-products",
+      "settings": {
+        "heading": "Recommended For You"
+      }
+    },
+    "product-gallery": {
+      "type": "product-gallery",
+      "settings": {
+        "heading": "All Products"
+      }
+    },
+    "marquee-featured": {
+      "type": "marquee-featured",
+      "settings": {
+        "heading_1": "Featured Products",
+        "heading_2": "New Arrivals"
+      }
+    },
+    "custom-design": {
+      "type": "custom-design",
+      "settings": {
+        "heading": "Design Your Own Jacket",
+        "subheading": "Submit your custom design and we'll bring it to life. Tell us your vision — colors, patches, embroidery, and more."
+      }
+    },
+    "blog-preview": {
+      "type": "blog-preview",
+      "settings": {
+        "heading": "From Our Journal",
+        "subheading": "Style guides, care tips, and stories from behind the seams."
+      }
+    }
+  },
+  "order": [
+    "hero-carousel",
+    "recommended-products",
+    "product-gallery",
+    "marquee-featured",
+    "custom-design",
+    "blog-preview"
+  ]
+}

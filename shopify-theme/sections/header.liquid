@@ -1,0 +1,103 @@
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo Image" },
+    { "type": "text", "id": "store_name", "label": "Store Name", "default": "UNIVERSAL JACKETS" }
+  ]
+}
+{% endschema %}
+
+<header class="site-header" id="siteHeader" role="banner">
+  <div class="site-header__inner">
+
+    <!-- Logo -->
+    <a href="{{ shop.url }}" class="site-header__logo" aria-label="{{ shop.name }}">
+      {%- if section.settings.logo -%}
+        <img src="{{ section.settings.logo | img_url: '200x' }}" alt="{{ shop.name }}" width="160" height="auto">
+      {%- else -%}
+        <span class="site-header__logo-text">{{ section.settings.store_name | default: shop.name }}</span>
+      {%- endif -%}
+    </a>
+
+    <!-- Desktop Search -->
+    <div class="site-header__search desktop-only">
+      <form action="{{ routes.search_url }}" method="get" class="header-search-form" role="search">
+        <input type="hidden" name="type" value="product">
+        <input type="search" name="q" placeholder="Search jackets, styles, sizes…" class="header-search-form__input" aria-label="Search" autocomplete="off" id="desktopSearchInput">
+        <button type="submit" class="header-search-form__btn" aria-label="Submit search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </form>
+      <div class="header-search__autocomplete" id="desktopSearchResults"></div>
+    </div>
+
+    <!-- Nav Actions -->
+    <div class="site-header__actions">
+
+      <!-- Mobile search icon -->
+      <button class="site-header__icon mobile-only" id="headerSearchToggle" aria-label="Search">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+
+      <!-- Menu dots -->
+      <button class="site-header__menu-dots" id="navMenuToggle" aria-label="Menu" aria-expanded="false" aria-controls="navDrawer">
+        <span class="menu-dots__dot"></span>
+        <span class="menu-dots__dot"></span>
+        <span class="menu-dots__dot"></span>
+      </button>
+
+      <!-- Cart -->
+      <a href="{{ routes.cart_url }}" class="site-header__icon site-header__cart" aria-label="Cart ({{ cart.item_count }} items)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        {%- if cart.item_count > 0 -%}
+          <span class="cart-badge">{{ cart.item_count }}</span>
+        {%- endif -%}
+      </a>
+    </div>
+  </div>
+
+  <!-- Desktop Search Dropdown Results -->
+  <div class="header-search-dropdown" id="headerSearchDropdown" hidden></div>
+</header>
+
+<!-- Nav Drawer -->
+<div class="nav-drawer" id="navDrawer" aria-hidden="true" role="dialog" aria-label="Navigation menu">
+  <div class="nav-drawer__backdrop" id="navDrawerBackdrop"></div>
+  <nav class="nav-drawer__panel">
+    <div class="nav-drawer__header">
+      <span class="nav-drawer__title">Menu</span>
+      <button class="nav-drawer__close" id="navDrawerClose" aria-label="Close menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <ul class="nav-drawer__links">
+      <li><a href="{{ shop.url }}/collections/all">All Products</a></li>
+      <li class="has-submenu">
+        <button class="submenu-toggle" aria-expanded="false">Categories <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+        <ul class="nav-submenu">
+          <li><a href="{{ shop.url }}/collections/bomber-jackets">Bomber Jackets</a></li>
+          <li><a href="{{ shop.url }}/collections/leather-jackets">Leather Jackets</a></li>
+          <li><a href="{{ shop.url }}/collections/puffer-jackets">Puffer Jackets</a></li>
+          <li><a href="{{ shop.url }}/collections/denim-jackets">Denim Jackets</a></li>
+          <li><a href="{{ shop.url }}/collections/trench-coats">Trench Coats</a></li>
+          <li><a href="{{ shop.url }}/collections/windbreakers">Windbreakers</a></li>
+        </ul>
+      </li>
+      <li><a href="{{ shop.url }}/collections/new-in">New In</a></li>
+      <li><a href="{{ shop.url }}/collections/bestsellers">Bestsellers</a></li>
+      <li><a href="{{ shop.url }}/pages/lookbook">Lookbook</a></li>
+      <li><a href="{{ shop.url }}/blogs/journal">Journal</a></li>
+      <li><a href="{{ shop.url }}/pages/custom">Custom Design</a></li>
+      <li><a href="{{ shop.url }}/pages/about">About</a></li>
+      <li class="nav-drawer__divider"></li>
+      {%- if customer -%}
+        <li><a href="{{ routes.account_url }}">My Account</a></li>
+        <li><a href="{{ routes.account_logout_url }}">Sign Out</a></li>
+      {%- else -%}
+        <li><a href="{{ routes.account_login_url }}">Sign In</a></li>
+        <li><a href="{{ routes.account_register_url }}">Create Account</a></li>
+      {%- endif -%}
+    </ul>
+  </nav>
+</div>

@@ -1,0 +1,131 @@
+{% schema %}
+{
+  "name": "Custom Design Upload",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Design Your Own Jacket" },
+    { "type": "textarea", "id": "subheading", "label": "Subheading", "default": "Submit your custom design and we'll bring it to life. Tell us your vision — colors, patches, embroidery, and more." },
+    { "type": "image_picker", "id": "bg_image", "label": "Background Image" }
+  ]
+}
+{% endschema %}
+
+<section class="custom-design section-spacing" data-aos="fade-up">
+  <div class="container">
+    <div class="custom-design__inner">
+      <div class="custom-design__text">
+        <p class="section-label">Made For You</p>
+        <h2 class="section-title">{{ section.settings.heading }}</h2>
+        <p class="custom-design__desc">{{ section.settings.subheading }}</p>
+        <ul class="custom-design__features">
+          <li>
+            <span class="feature-icon">✦</span>
+            Premium material selection
+          </li>
+          <li>
+            <span class="feature-icon">✦</span>
+            Custom embroidery & patches
+          </li>
+          <li>
+            <span class="feature-icon">✦</span>
+            Any colour, any size
+          </li>
+          <li>
+            <span class="feature-icon">✦</span>
+            Ships in 3–4 weeks
+          </li>
+        </ul>
+      </div>
+
+      <div class="custom-design__form-wrap">
+        {%- form 'contact', id: 'CustomDesignForm' -%}
+          {%- if form.posted_successfully? -%}
+            <div class="form-success" role="alert">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Thank you! We'll be in touch within 24 hours.
+            </div>
+          {%- endif -%}
+
+          <div class="form-row form-row--2col">
+            <div class="form-field">
+              <label for="cd-name" class="form-label">Your Name <span aria-hidden="true">*</span></label>
+              <input type="text" id="cd-name" name="contact[name]" required class="form-input" placeholder="John Doe" autocomplete="name">
+            </div>
+            <div class="form-field">
+              <label for="cd-email" class="form-label">Email <span aria-hidden="true">*</span></label>
+              <input type="email" id="cd-email" name="contact[email]" required class="form-input" placeholder="you@email.com" autocomplete="email">
+            </div>
+          </div>
+
+          <div class="form-row form-row--2col">
+            <div class="form-field">
+              <label for="cd-phone" class="form-label">Phone Number</label>
+              <input type="tel" id="cd-phone" name="contact[phone]" class="form-input" placeholder="+1 (555) 000-0000" autocomplete="tel">
+            </div>
+            <div class="form-field">
+              <label for="cd-color" class="form-label">Jacket Color <span aria-hidden="true">*</span></label>
+              <select id="cd-color" name="contact[jacket_color]" required class="form-select">
+                <option value="">Select a color…</option>
+                <option>Black</option>
+                <option>Brown / Chocolate</option>
+                <option>Navy Blue</option>
+                <option>Olive Green</option>
+                <option>Grey</option>
+                <option>Camel / Tan</option>
+                <option>Burgundy / Wine Red</option>
+                <option>White / Off-White</option>
+                <option>Custom — describe below</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row form-row--2col">
+            <div class="form-field">
+              <label for="cd-size" class="form-label">Jacket Size <span aria-hidden="true">*</span></label>
+              <select id="cd-size" name="contact[jacket_size]" required class="form-select">
+                <option value="">Select a size…</option>
+                <option>XS</option>
+                <option>S</option>
+                <option>M</option>
+                <option>L</option>
+                <option>XL</option>
+                <option>XXL</option>
+                <option>Custom sizing — describe below</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="cd-budget" class="form-label">Budget Range</label>
+              <select id="cd-budget" name="contact[budget]" class="form-select">
+                <option value="">Select budget…</option>
+                <option>Under $200</option>
+                <option>$200 – $350</option>
+                <option>$350 – $500</option>
+                <option>$500+</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="cd-design" class="form-label">Design Details <span aria-hidden="true">*</span></label>
+            <textarea id="cd-design" name="contact[body]" required class="form-textarea" rows="4" placeholder="Describe your design — type of jacket (bomber, leather, puffer…), colours, patches, embroidery, materials, special requirements…"></textarea>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Upload Design / Reference Image</label>
+            <div class="file-upload-area" id="fileUploadArea">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              <p>Drag &amp; drop or <span class="upload-link">browse file</span></p>
+              <p class="upload-hint">PNG, JPG, PDF — max 10MB</p>
+              <input type="file" id="cd-file" name="contact[attachment]" accept="image/*,.pdf" class="file-upload-input">
+            </div>
+            <div class="file-upload-preview" id="fileUploadPreview" hidden></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">
+            Submit Custom Request
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</section>

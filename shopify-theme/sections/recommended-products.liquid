@@ -1,0 +1,51 @@
+{% schema %}
+{
+  "name": "Recommended Products",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Recommended For You" },
+    { "type": "collection", "id": "collection", "label": "Collection" }
+  ]
+}
+{% endschema %}
+
+<section class="recommended-products section-spacing" data-aos="fade-up">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Curated Picks</p>
+      <h2 class="section-title">{{ section.settings.heading }}</h2>
+    </div>
+    <div class="recommended-products__wrapper">
+      <button class="slider-arrow slider-arrow--prev" id="recPrev" aria-label="Previous products">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="recommended-products__track" id="recTrack">
+        {%- assign rec_collection = collections[section.settings.collection.handle] | default: collections.all -%}
+        {%- assign rec_products = rec_collection.products | sort: 'published_at' | reverse -%}
+        {%- assign shown = 0 -%}
+        {%- for product in rec_products limit: 20 -%}
+          {%- assign shown = shown | plus: 1 -%}
+          {%- render 'product-card', product: product, card_class: 'recommended-card' -%}
+        {%- endfor -%}
+        {%- if shown == 0 -%}
+          {%- for i in (1..8) -%}
+            <div class="product-card recommended-card product-card--placeholder">
+              <div class="product-card__image-wrap">
+                <div class="product-card__placeholder-img"></div>
+              </div>
+              <div class="product-card__info">
+                <p class="product-card__title">Sample Jacket {{ i }}</p>
+                <p class="product-card__price">$129.00</p>
+              </div>
+            </div>
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+      <button class="slider-arrow slider-arrow--next" id="recNext" aria-label="Next products">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <div class="slider-progress" id="recProgress">
+      <div class="slider-progress__bar" id="recProgressBar"></div>
+    </div>
+  </div>
+</section>
