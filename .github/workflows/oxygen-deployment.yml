@@ -29,8 +29,9 @@ jobs:
         with:
           version: 10
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+- name: Install dependencies
+  # Added the -r flag to install dependencies inside all subfolders 👇
+  run: pnpm install -r --no-frozen-lockfile
 
-      - name: Build storefront
-        run: pnpm -r --if-present run build
+- name: Build storefront
+  run: pnpm -r --if-present run build
