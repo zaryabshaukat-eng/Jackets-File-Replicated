@@ -22,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22 # Updated from 18 to 22 🚀
+          node-version: 22
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -33,4 +33,4 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Build storefront
-       run: pnpm -r --if-present run build
+        run: pnpm -r --if-present run build
