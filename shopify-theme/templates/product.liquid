@@ -12,8 +12,9 @@
   </script>
 
   <div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb" aria-label="Breadcrumb">
+    <!-- Back to Products + Breadcrumb row -->
+    <div class="product-page__topbar">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
       <ol class="breadcrumb__list">
         <li class="breadcrumb__item"><a href="{{ shop.url }}">Home</a></li>
         <li class="breadcrumb__item" aria-hidden="true">/</li>
@@ -27,6 +28,12 @@
         <li class="breadcrumb__item breadcrumb__item--current" aria-current="page">{{ product.title }}</li>
       </ol>
     </nav>
+
+      <a href="{%- if collection -%}{{ collection.url }}{%- else -%}{{ shop.url }}/collections/all{%- endif -%}" class="btn-back-products">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to Products
+      </a>
+    </div>
 
     <div class="product-page__layout">
       <!-- Gallery -->
@@ -264,6 +271,14 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Back to products (bottom) -->
+    <div class="product-page__back-bottom">
+      <a href="{%- if collection -%}{{ collection.url }}{%- else -%}{{ shop.url }}/collections/all{%- endif -%}" class="btn-back-products btn-back-products--lg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to All Products
+      </a>
     </div>
 
     <!-- Related Products -->

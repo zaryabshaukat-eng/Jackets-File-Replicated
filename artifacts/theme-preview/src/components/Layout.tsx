@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation } from '../router';
 import { NAV_LINKS, FOOTER_LINKS, ALL_PRODUCTS, type Product } from '../data/products';
+import { useCart, type CartItem } from '../context/CartContext';
 
 const CATEGORIES = [
   { label: 'Bomber Jackets', slug: 'bomber' },
@@ -146,9 +147,109 @@ function LiveSearch({ onClose }: { onClose: () => void }) {
   );
 }
 
+function CartDrawer() {
+  const { isOpen, closeCart, items, updateQty, removeItem, subtotal, totalItems } = useCart();
+  const [checkoutState, setCheckoutState] = useState<'idle'|'done'>('idle');
+
+  if (checkoutState === 'done') {
+    return (
+      <>
+        <div className={`cart-drawer-overlay${isOpen ? ' is-open' : ''}`} onClick={closeCart} aria-hidden="true" />
+        <aside className={`cart-drawer${isOpen ? ' is-open' : ''}`} aria-label="Shopping cart" role="dialog" aria-modal="true">
+          <div className="cart-drawer__head">
+            <h2 className="cart-drawer__title">Order Confirmed!</h2>
+            <button className="cart-drawer__close" onClick={() => { setCheckoutState('idle'); closeCart(); }} aria-label="Close cart">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div className="cart-drawer__body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 16, padding: '40px 24px' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--clr-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, textAlign: 'center' }}>Thank you for your order!</h3>
+            <p style={{ fontSize: 14, color: 'var(--clr-muted)', textAlign: 'center' }}>Your order has been received and is being processed.</p>
+            <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => { setCheckoutState('idle'); closeCart(); }}>Continue Shopping</button>
+          </div>
+        </aside>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className={`cart-drawer-overlay${isOpen ? ' is-open' : ''}`} onClick={closeCart} aria-hidden="true" />
+      <aside className={`cart-drawer${isOpen ? ' is-open' : ''}`} aria-label="Shopping cart" role="dialog" aria-modal="true">
+        <div className="cart-drawer__head">
+          <h2 className="cart-drawer__title">
+            Your Cart
+            {totalItems > 0 && <span className="cart-drawer__count">{totalItems}</span>}
+          </h2>
+          <button className="cart-drawer__close" onClick={closeCart} aria-label="Close cart">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        {items.length === 0 ? (
+          <div className="cart-drawer__empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <p>Your cart is empty</p>
+            <Link href="/collections/all" className="btn btn-primary" style={{ marginTop: 16 }} onClick={closeCart}>
+              Browse Products
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="cart-drawer__items">
+              {items.map((item: CartItem) => (
+                <div key={item.id} className="cart-drawer-item">
+                  <div className="cart-drawer-item__img" style={{ background: item.bg }} />
+                  <div className="cart-drawer-item__body">
+                    <Link href={`/products/${item.handle}`} className="cart-drawer-item__title" onClick={closeCart}>
+                      {item.title}
+                    </Link>
+                    <p className="cart-drawer-item__variant">{item.color} · {item.size}</p>
+                    <p className="cart-drawer-item__price">${(item.price * item.qty).toFixed(2)}</p>
+                    <div className="cart-drawer-item__controls">
+                      <div className="cart-drawer-qty">
+                        <button className="cart-drawer-qty__btn" onClick={() => updateQty(item.id, item.qty - 1)} aria-label="Decrease">−</button>
+                        <span className="cart-drawer-qty__num">{item.qty}</span>
+                        <button className="cart-drawer-qty__btn" onClick={() => updateQty(item.id, item.qty + 1)} aria-label="Increase">+</button>
+                      </div>
+                      <button className="cart-drawer-remove" onClick={() => removeItem(item.id)} aria-label="Remove">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="cart-drawer__footer">
+              <div className="cart-drawer__subtotal">
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <p className="cart-drawer__shipping-note">Shipping & taxes calculated at checkout</p>
+              <button className="btn btn-primary btn-full cart-drawer__checkout" onClick={() => setCheckoutState('done')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg>
+                Checkout · ${subtotal.toFixed(2)}
+              </button>
+              <button className="cart-drawer__continue" onClick={closeCart}>
+                Continue Shopping
+              </button>
+            </div>
+          </>
+        )}
+      </aside>
+    </>
+  );
+}
+
 export default function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
+  const { totalItems, openCart } = useCart();
 
   const openSearch  = () => { setSearchOpen(true);  document.body.style.overflow = 'hidden'; };
   const closeSearch = () => { setSearchOpen(false); document.body.style.overflow = ''; };
@@ -224,10 +325,13 @@ export default function Layout({ children }: { children: ReactNode }) {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           <span>Menu</span>
         </button>
-        <Link href="/cart" className="mobile-bottom-bar__item">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <button className="mobile-bottom-bar__item" aria-label="Cart" onClick={openCart}>
+          <span style={{ position: 'relative', display: 'inline-flex' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            {totalItems > 0 && <span className="cart-badge" style={{ top: -6, right: -8 }}>{totalItems}</span>}
+          </span>
           <span>Cart</span>
-        </Link>
+        </button>
       </nav>
 
       {/* Announcement Bar */}
@@ -263,10 +367,10 @@ export default function Layout({ children }: { children: ReactNode }) {
             <button className="site-header__menu-dots" id="navMenuToggle" aria-label="Menu" aria-expanded="false" aria-controls="navDrawer">
               <span className="menu-dots__dot"/><span className="menu-dots__dot"/><span className="menu-dots__dot"/>
             </button>
-            <Link href="/cart" className="site-header__icon site-header__cart" aria-label="Cart">
+            <button className="site-header__icon site-header__cart" aria-label="Cart" onClick={openCart}>
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-              <span className="cart-badge">2</span>
-            </Link>
+              {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
+            </button>
           </div>
         </div>
       </header>
@@ -304,6 +408,9 @@ export default function Layout({ children }: { children: ReactNode }) {
           </ul>
         </nav>
       </div>
+
+      {/* Cart Drawer */}
+      <CartDrawer />
 
       {/* Page Content */}
       <main id="MainContent">

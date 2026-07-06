@@ -258,6 +258,143 @@ window.addEventListener('scroll', () => {
 })();
 
 /* ============================================================
+   CART DRAWER
+   ============================================================ */
+(function initCartDrawer() {
+  const drawer    = $('#CartDrawer');
+  if (!drawer) return;
+
+  const overlay   = $('#CartDrawerOverlay');
+  const closeBtn  = $('#CartDrawerClose');
+  const itemsEl   = $('#CartDrawerItems');
+  const totalEl   = $('#CartDrawerTotal');
+  const emptyEl   = $('#CartDrawerEmpty');
+  const footerEl  = $('#CartDrawerFooter');
+  let busy = false;
+
+  function openDrawer() {
+    drawer.classList.add('is-open');
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    loadCartIntoDrawer();
+  }
+  function closeDrawer() {
+    drawer.classList.remove('is-open');
+    drawer.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  on(closeBtn,  'click', closeDrawer);
+  on(overlay,   'click', closeDrawer);
+  on(document,  'keydown', e => { if (e.key === 'Escape' && drawer.classList.contains('is-open')) closeDrawer(); });
+
+  /* Wire ALL cart-trigger elements in the page */
+  function wireCartTriggers() {
+    $$('.js-cart-trigger, [data-cart-trigger], .site-header__cart, .mobile-bottom-bar__cart-btn').forEach(el => {
+      el.addEventListener('click', e => { e.preventDefault(); openDrawer(); });
+    });
+  }
+  wireCartTriggers();
+  /* Expose globally so sections can re-wire after DOM changes */
+  window.openCartDrawer = openDrawer;
+
+  /* Format cents → $X.XX */
+  function fmt(cents) { return '$' + (cents / 100).toFixed(2); }
+
+  function syncBadges(count) {
+    $$('.cart-badge, .cart-count').forEach(el => {
+      el.textContent = count;
+      el.hidden = count === 0;
+    });
+  }
+
+  function renderItems(cart) {
+    if (!itemsEl) return;
+    if (cart.item_count === 0) {
+      itemsEl.innerHTML = '';
+      if (emptyEl)  emptyEl.hidden  = false;
+      if (footerEl) footerEl.hidden = true;
+      if (totalEl)  totalEl.textContent = '$0.00';
+      return;
+    }
+    if (emptyEl)  emptyEl.hidden  = true;
+    if (footerEl) footerEl.hidden = false;
+
+    itemsEl.innerHTML = cart.items.map(item => `
+      <div class="cart-drawer-item" data-key="${item.key}">
+        <div class="cart-drawer-item__img">
+          ${item.featured_image?.url
+            ? `<img src="${item.featured_image.url}&width=160" alt="${item.title | escape}" loading="lazy">`
+            : `<div class="cart-drawer-item__img-placeholder"></div>`}
+        </div>
+        <div class="cart-drawer-item__body">
+          <a href="${item.url}" class="cart-drawer-item__title">${item.product_title}</a>
+          ${item.variant_title && item.variant_title !== 'Default Title'
+            ? `<p class="cart-drawer-item__variant">${item.variant_title}</p>` : ''}
+          <p class="cart-drawer-item__price">${fmt(item.final_line_price)}</p>
+          <div class="cart-drawer-item__controls">
+            <div class="cart-drawer-qty">
+              <button class="cart-drawer-qty__btn js-qty-minus"
+                data-key="${item.key}" data-qty="${item.quantity - 1}" aria-label="Decrease">−</button>
+              <span class="cart-drawer-qty__num">${item.quantity}</span>
+              <button class="cart-drawer-qty__btn js-qty-plus"
+                data-key="${item.key}" data-qty="${item.quantity + 1}" aria-label="Increase">+</button>
+            </div>
+            <button class="cart-drawer-remove js-remove-item"
+              data-key="${item.key}" aria-label="Remove item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+              </svg>
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    if (totalEl) totalEl.textContent = fmt(cart.total_price);
+  }
+
+  async function loadCartIntoDrawer() {
+    try {
+      const res = await fetch('/cart.js');
+      if (!res.ok) return;
+      const cart = await res.json();
+      renderItems(cart);
+      syncBadges(cart.item_count);
+    } catch (e) {}
+  }
+
+  async function changeItem(key, qty) {
+    if (busy) return;
+    busy = true;
+    try {
+      const res = await fetch('/cart/change.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ id: key, quantity: qty })
+      });
+      if (!res.ok) throw new Error();
+      const cart = await res.json();
+      renderItems(cart);
+      syncBadges(cart.item_count);
+    } catch (e) {
+    } finally { busy = false; }
+  }
+
+  /* Delegate qty/remove clicks inside the drawer */
+  on(drawer, 'click', async e => {
+    const minus  = e.target.closest('.js-qty-minus');
+    const plus   = e.target.closest('.js-qty-plus');
+    const remove = e.target.closest('.js-remove-item');
+    if (minus)  await changeItem(minus.dataset.key,  Math.max(0, parseInt(minus.dataset.qty, 10)));
+    if (plus)   await changeItem(plus.dataset.key,   parseInt(plus.dataset.qty, 10));
+    if (remove) await changeItem(remove.dataset.key, 0);
+  });
+})();
+
+/* ============================================================
    PRODUCT GALLERY — FILTERS + LOAD MORE
    ============================================================ */
 (function initFilters() {
@@ -516,6 +653,7 @@ window.addEventListener('scroll', () => {
       }
       if (cartMsg) { cartMsg.hidden = false; setTimeout(() => { cartMsg.hidden = true; }, 4500); }
       await refreshCartCount();
+      if (typeof window.openCartDrawer === 'function') window.openCartDrawer();
     } catch (err) {
     } finally {
       addBtn.disabled = false;
@@ -605,6 +743,7 @@ document.addEventListener('click', async e => {
     btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Added!';
     setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1800);
     await refreshCartCount();
+    if (typeof window.openCartDrawer === 'function') window.openCartDrawer();
   } catch (err) {
     btn.innerHTML = '&#x26a0; Error';
     setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1800);

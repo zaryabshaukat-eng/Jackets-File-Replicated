@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams, useLocation } from '../router';
 import { ALL_PRODUCTS, COLOR_MAP } from '../data/products';
 import ProductCard from '../components/ProductCard';
+import { useCart } from '../context/CartContext';
 
 const REVIEWS = [
   { name: 'James K.', rating: 5, date: 'June 2025', text: 'Absolutely love this jacket. The quality is exceptional — fits perfectly and looks even better in person.' },
@@ -31,6 +32,7 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
 export default function ProductDetailPage() {
   const { handle } = useParams<{ handle: string }>();
   const [, navigate] = useLocation();
+  const { addItem, openCart } = useCart();
   const product = ALL_PRODUCTS.find(p => p.handle === handle);
 
   const [selectedColor, setSelectedColor] = useState('');
@@ -78,15 +80,20 @@ export default function ProductDetailPage() {
 
   const related = ALL_PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
 
+  function doAddToCart() {
+    addItem(product, selectedColor, selectedSize, qty);
+    setCartState('added');
+    setError('');
+    setTimeout(() => setCartState('idle'), 3000);
+  }
+
   function handleAddToCart() {
     if (!selectedColor || !selectedSize) {
       setCartState('picking');
       setError(!selectedColor && !selectedSize ? 'Please select a colour and size.' : !selectedColor ? 'Please select a colour.' : 'Please select a size.');
       return;
     }
-    setCartState('added');
-    setError('');
-    setTimeout(() => setCartState('idle'), 3000);
+    doAddToCart();
   }
 
   function confirmSelection() {
@@ -94,24 +101,32 @@ export default function ProductDetailPage() {
       setError(!selectedColor && !selectedSize ? 'Please select a colour and size.' : !selectedColor ? 'Please select a colour.' : 'Please select a size.');
       return;
     }
-    setCartState('added');
-    setError('');
-    setTimeout(() => setCartState('idle'), 3000);
+    setCartState('idle');
+    doAddToCart();
   }
 
   return (
     <div style={{ minHeight: '70vh' }}>
-      {/* Breadcrumb */}
+      {/* Breadcrumb + Back Button row */}
       <div className="container" style={{ paddingTop: 28, paddingBottom: 0 }}>
-        <nav style={{ fontSize: 12, color: 'var(--clr-muted)', display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link href="/">Home</Link>
-          <span>/</span>
-          <Link href="/collections/all">Jackets</Link>
-          <span>/</span>
-          <Link href={`/collections/${product.category}`} style={{ textTransform: 'capitalize' }}>{product.category}</Link>
-          <span>/</span>
-          <span style={{ color: 'var(--clr-black)' }}>{product.title}</span>
-        </nav>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <nav style={{ fontSize: 12, color: 'var(--clr-muted)', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Link href="/">Home</Link>
+            <span>/</span>
+            <Link href="/collections/all">Jackets</Link>
+            <span>/</span>
+            <Link href={`/collections/${product.category}`} style={{ textTransform: 'capitalize' }}>{product.category}</Link>
+            <span>/</span>
+            <span style={{ color: 'var(--clr-black)' }}>{product.title}</span>
+          </nav>
+          <Link href="/collections/all" className="btn-back-products">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Back to Products
+          </Link>
+        </div>
       </div>
 
       {/* Main Layout */}
@@ -297,6 +312,17 @@ export default function ProductDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Bottom Back Button */}
+        <div style={{ textAlign: 'center', paddingTop: 48 }}>
+          <Link href="/collections/all" className="btn-back-products btn-back-products--lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Back to All Products
+          </Link>
+        </div>
       </div>
 
       {/* Color + Size Modal (triggered when cart clicked without selection) */}
