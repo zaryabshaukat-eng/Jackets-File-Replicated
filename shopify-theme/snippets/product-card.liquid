@@ -27,8 +27,8 @@
     <a href="{{ product_url }}" class="product-card__img-link" aria-label="View {{ product.title | escape }}">
       {%- if first_image -%}
         <img
-          src="{{ first_image | img_url: '600x750', crop: 'center' }}"
-          srcset="{{ first_image | img_url: '400x500', crop: 'center' }} 400w, {{ first_image | img_url: '600x750', crop: 'center' }} 600w"
+          src="{{ first_image | image_url: width: 600, height: 750, crop: 'center' }}"
+          srcset="{{ first_image | image_url: width: 400, height: 500, crop: 'center' }} 400w, {{ first_image | image_url: width: 600, height: 750, crop: 'center' }} 600w"
           sizes="(max-width: 600px) 50vw, 280px"
           alt="{{ first_image.alt | default: product.title | escape }}"
           loading="lazy"
@@ -38,7 +38,7 @@
           itemprop="image">
         {%- if second_image -%}
           <img
-            src="{{ second_image | img_url: '600x750', crop: 'center' }}"
+            src="{{ second_image | image_url: width: 600, height: 750, crop: 'center' }}"
             alt="{{ second_image.alt | default: product.title | escape }}"
             loading="lazy"
             width="600"

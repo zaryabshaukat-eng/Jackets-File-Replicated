@@ -17,7 +17,7 @@
             <article class="blog-article-card" itemscope itemtype="https://schema.org/BlogPosting">
               {%- if article.image -%}
                 <a href="{{ article.url }}" class="blog-article-card__img-wrap">
-                  <img src="{{ article.image | img_url: '800x500', crop: 'center' }}" alt="{{ article.title | escape }}" loading="lazy" class="blog-article-card__img" itemprop="image">
+                  <img src="{{ article.image | image_url: width: 800, height: 500, crop: 'center' }}" alt="{{ article.title | escape }}" loading="lazy" class="blog-article-card__img" itemprop="image">
                 </a>
               {%- else -%}
                 <a href="{{ article.url }}" class="blog-article-card__img-wrap blog-article-card__img-wrap--placeholder"></a>

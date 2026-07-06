@@ -4,8 +4,12 @@
   <meta itemprop="name" content="{{ product.title | escape }}">
   <meta itemprop="description" content="{{ product.description | strip_html | escape }}">
   {%- if product.featured_image -%}
-    <meta itemprop="image" content="{{ product.featured_image | img_url: '800x800' }}">
+    <meta itemprop="image" content="{{ product.featured_image | image_url: width: 800 }}">
   {%- endif -%}
+
+  <script data-product-variants type="application/json">
+    {{ product.variants | json }}
+  </script>
 
   <div class="container">
     <!-- Breadcrumb -->
@@ -31,8 +35,8 @@
           {%- for image in product.images -%}
             <div class="product-gallery-main__item {% if forloop.first %}is-active{% endif %}" data-index="{{ forloop.index0 }}">
               <img
-                src="{{ image | img_url: '1000x1200', crop: 'center' }}"
-                srcset="{{ image | img_url: '600x720', crop: 'center' }} 600w, {{ image | img_url: '1000x1200', crop: 'center' }} 1000w"
+                src="{{ image | image_url: width: 1000, height: 1200, crop: 'center' }}"
+                srcset="{{ image | image_url: width: 600, height: 720, crop: 'center' }} 600w, {{ image | image_url: width: 1000, height: 1200, crop: 'center' }} 1000w"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 alt="{{ image.alt | default: product.title | escape }}"
                 loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
@@ -60,7 +64,7 @@
           <div class="product-gallery-thumbs" id="productGalleryThumbs">
             {%- for image in product.images -%}
               <button class="product-gallery-thumb {% if forloop.first %}is-active{% endif %}" data-index="{{ forloop.index0 }}" aria-label="View image {{ forloop.index }}">
-                <img src="{{ image | img_url: '150x150', crop: 'center' }}" alt="{{ image.alt | default: product.title | escape }}" loading="lazy" width="150" height="150">
+                <img src="{{ image | image_url: width: 150, height: 150, crop: 'center' }}" alt="{{ image.alt | default: product.title | escape }}" loading="lazy" width="150" height="150">
               </button>
             {%- endfor -%}
           </div>

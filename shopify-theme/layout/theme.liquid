@@ -8,7 +8,7 @@
   <meta property="og:title" content="{{ page_title | default: shop.name | escape }}">
   <meta property="og:description" content="{{ page_description | default: shop.description | escape }}">
   <meta property="og:url" content="{{ canonical_url }}">
-  <meta property="og:image" content="{{ settings.og_image | img_url: '1200x630' }}">
+  <meta property="og:image" content="{{ settings.og_image | image_url: width: 1200, height: 630, crop: 'center' }}">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="{{ canonical_url }}">
   <title>{{ page_title | default: shop.name }} | {{ shop.name }}</title>

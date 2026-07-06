@@ -1,7 +1,7 @@
 <div class="collection-page">
   <div class="collection-page__hero">
     {%- if collection.image -%}
-      <img src="{{ collection.image | img_url: '1600x500', crop: 'center' }}" alt="{{ collection.title | escape }}" class="collection-page__hero-img" loading="eager">
+      <img src="{{ collection.image | image_url: width: 1600, height: 500, crop: 'center' }}" alt="{{ collection.title | escape }}" class="collection-page__hero-img" loading="eager">
     {%- endif -%}
     <div class="collection-page__hero-content">
       <h1 class="collection-page__title">{{ collection.title }}</h1>

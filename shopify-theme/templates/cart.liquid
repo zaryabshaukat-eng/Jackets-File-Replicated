@@ -22,7 +22,7 @@
                     <td class="cart-table__img">
                       <a href="{{ item.url }}">
                         {%- if item.image -%}
-                          <img src="{{ item.image | img_url: '120x150', crop: 'center' }}" alt="{{ item.title | escape }}" width="80" height="100" loading="lazy">
+                          <img src="{{ item.image | image_url: width: 120, height: 150, crop: 'center' }}" alt="{{ item.title | escape }}" width="80" height="100" loading="lazy">
                         {%- endif -%}
                       </a>
                     </td>

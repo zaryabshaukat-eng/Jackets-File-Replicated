@@ -1,0 +1,1 @@
+- [Shopify theme conventions](shopify-theme-conventions.md) — theme uses assets/main.css and assets/main.js (not theme.css/theme.js); img_url is deprecated — always use image_url filter.

@@ -65,7 +65,7 @@
       <!-- Brand Column -->
       <div class="site-footer__brand">
         {%- if section.settings.logo -%}
-          <img src="{{ section.settings.logo | img_url: '180x' }}" alt="{{ shop.name }}" width="140" height="auto" loading="lazy">
+          <img src="{{ section.settings.logo | image_url: width: 280 }}" alt="{{ shop.name }}" width="140" loading="lazy">
         {%- else -%}
           <span class="footer-logo-text">UNIVERSAL JACKETS</span>
         {%- endif -%}

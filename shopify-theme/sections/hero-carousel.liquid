@@ -36,8 +36,8 @@
         <div class="hero-carousel__bg">
           {%- if block.settings.image -%}
             <img
-              src="{{ block.settings.image | img_url: '1600x900', crop: 'center' }}"
-              srcset="{{ block.settings.image | img_url: '800x450', crop: 'center' }} 800w, {{ block.settings.image | img_url: '1200x675', crop: 'center' }} 1200w, {{ block.settings.image | img_url: '1600x900', crop: 'center' }} 1600w"
+              src="{{ block.settings.image | image_url: width: 1600, height: 900, crop: 'center' }}"
+              srcset="{{ block.settings.image | image_url: width: 800, height: 450, crop: 'center' }} 800w, {{ block.settings.image | image_url: width: 1200, height: 675, crop: 'center' }} 1200w, {{ block.settings.image | image_url: width: 1600, height: 900, crop: 'center' }} 1600w"
               sizes="100vw"
               alt="{{ block.settings.heading | escape }}"
               loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"

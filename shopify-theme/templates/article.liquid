@@ -6,8 +6,8 @@
   <div class="article-page__hero">
     {%- if article.image -%}
       <img
-        src="{{ article.image | img_url: '1400x600', crop: 'center' }}"
-        srcset="{{ article.image | img_url: '800x400', crop: 'center' }} 800w, {{ article.image | img_url: '1400x600', crop: 'center' }} 1400w"
+        src="{{ article.image | image_url: width: 1400, height: 600, crop: 'center' }}"
+        srcset="{{ article.image | image_url: width: 800, height: 400, crop: 'center' }} 800w, {{ article.image | image_url: width: 1400, height: 600, crop: 'center' }} 1400w"
         sizes="100vw"
         alt="{{ article.title | escape }}"
         loading="eager"
@@ -68,7 +68,7 @@
                 <article class="blog-article-card">
                   {%- if related_article.image -%}
                     <a href="{{ related_article.url }}" class="blog-article-card__img-wrap">
-                      <img src="{{ related_article.image | img_url: '600x400', crop: 'center' }}" alt="{{ related_article.title | escape }}" loading="lazy" class="blog-article-card__img">
+                      <img src="{{ related_article.image | image_url: width: 600, height: 400, crop: 'center' }}" alt="{{ related_article.title | escape }}" loading="lazy" class="blog-article-card__img">
                     </a>
                   {%- endif -%}
                   <div class="blog-article-card__body">

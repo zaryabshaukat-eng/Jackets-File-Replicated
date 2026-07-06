@@ -17,7 +17,7 @@
       <div class="blog-preview__image-col">
         {%- if section.settings.side_image -%}
           <img
-            src="{{ section.settings.side_image | img_url: '800x1000', crop: 'center' }}"
+            src="{{ section.settings.side_image | image_url: width: 800, height: 1000, crop: 'center' }}"
             alt="Journal"
             class="blog-preview__img"
             loading="lazy"
@@ -46,7 +46,7 @@
               <article class="blog-card">
                 {%- if article.image -%}
                   <a href="{{ article.url }}" class="blog-card__img-wrap" tabindex="-1" aria-hidden="true">
-                    <img src="{{ article.image | img_url: '600x400', crop: 'center' }}" alt="{{ article.title | escape }}" loading="lazy" class="blog-card__img">
+                    <img src="{{ article.image | image_url: width: 600, height: 400, crop: 'center' }}" alt="{{ article.title | escape }}" loading="lazy" class="blog-card__img">
                   </a>
                 {%- endif -%}
                 <div class="blog-card__body">
