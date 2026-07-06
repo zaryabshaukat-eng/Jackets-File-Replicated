@@ -10,6 +10,8 @@
   },
   "private": true,
   "devDependencies": {
+    "@shopify/cli": "^4.3.0",
+    "@shopify/cli-hydrogen": "^13.0.0",
     "prettier": "^3.8.4",
     "typescript": "~5.9.3"
   }
