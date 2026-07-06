@@ -1,0 +1,155 @@
+/* Import the Shopify theme stylesheet */
+@import './theme.css';
+
+/* ═══════════════════════════════════════════════
+   PREVIEW-SPECIFIC OVERRIDES
+   ═══════════════════════════════════════════════ */
+
+/* ── Placeholder images need explicit height ── */
+.product-card__placeholder-img {
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+}
+.product-card__image-wrap {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #111;
+}
+.blog-preview__img-placeholder {
+  background: linear-gradient(160deg, #0a0a0a 0%, #1a1208 100%);
+  min-height: 400px;
+}
+
+/* ── Hero gap fix ──────────────────────────────
+   body already has padding-top = announcement + header.
+   The hero margin-top was doubling that offset.
+   Fix: zero it out; add only a hairline separator. */
+.hero-carousel {
+  margin-top: 0 !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* ── Product gallery – filter always on left ───
+   Desktop: 260px sidebar (already in theme.css)
+   Mobile:  compact 120px sidebar beside products */
+.product-gallery__layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .product-gallery__layout {
+    grid-template-columns: 120px 1fr;
+    gap: 14px;
+  }
+}
+
+/* Always show the filter sidebar (override theme's mobile hide) */
+.product-gallery__filters.desktop-filters {
+  display: block !important;
+  position: sticky;
+  top: calc(var(--announcement-h) + var(--header-h) + 16px);
+}
+
+/* Compact filter elements on narrow sidebar */
+@media (max-width: 900px) {
+  .product-gallery__filters {
+    position: static !important;
+  }
+  .filter-group {
+    padding: 10px 0;
+  }
+  .filter-group__title {
+    font-size: 8px;
+    margin-bottom: 8px;
+    letter-spacing: .1em;
+  }
+  .filter-colors {
+    gap: 5px;
+  }
+  .color-swatch {
+    width: 20px;
+    height: 20px;
+  }
+  .filter-sizes {
+    gap: 4px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .size-btn {
+    padding: 4px 7px;
+    font-size: 10px;
+    width: 100%;
+    text-align: center;
+  }
+  .price-range-slider__values {
+    font-size: 10px;
+  }
+  .btn-clear-filters {
+    font-size: 9px;
+    padding: 6px 0;
+    letter-spacing: .06em;
+  }
+}
+
+/* ── Load More button ── */
+.btn-load-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 36px;
+  background: transparent;
+  border: 1.5px solid var(--clr-black);
+  color: var(--clr-black);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+}
+.btn-load-more:hover {
+  background: var(--clr-black);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.load-more-wrapper {
+  text-align: center;
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--clr-light-border);
+}
+
+/* ── Auth pages full-height ── */
+.auth-page { min-height: calc(100vh - var(--announcement-h) - var(--header-h)); }
+.auth-page__split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: inherit;
+}
+@media (max-width: 768px) {
+  .auth-page__split { grid-template-columns: 1fr; }
+  .auth-page__image-panel { display: none; }
+}
+.auth-page__image-panel { min-height: 300px; }
+.auth-page__form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+}
+.auth-page__form-inner { width: 100%; max-width: 400px; }
+.auth-page__back { font-size: 13px; color: var(--clr-muted); display: block; margin-bottom: 32px; }
+.auth-page__back:hover { color: var(--clr-black); }
+.auth-page__title { font-family: var(--font-serif); font-size: 36px; font-weight: 400; margin-bottom: 8px; }
+.auth-page__sub { color: var(--clr-muted); font-size: 14px; margin-bottom: 36px; }
+
+/* ── Breadcrumb ── */
+.breadcrumb { font-size: 12px; opacity: .6; }
+.breadcrumb a:hover { opacity: 1; text-decoration: underline; }

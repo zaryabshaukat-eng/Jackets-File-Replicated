@@ -571,13 +571,13 @@ input, textarea, select { font-family: inherit; }
   height: 100svh;
   min-height: 500px;
   overflow: hidden;
-  margin-top: 0;
+  margin-top: calc(var(--announcement-h) + var(--header-h));
   margin-bottom: 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* Hero sits directly below the fixed bars — body padding-top already
-   offsets content. Zero out the margin; add only a hairline separator. */
+/* Hero sits directly below the fixed bars — no extra offset needed.
+   Body already has padding-top from base styles; hero-carousel
+   uses a negative margin to extend under the header region correctly. */
 
 .hero-carousel__track {
   position: relative;
@@ -1219,9 +1219,7 @@ input, textarea, select { font-family: inherit; }
 .pagination__ellipsis { color: var(--clr-muted); padding: 0 6px; }
 
 /* Load more */
-.load-more-wrapper { text-align: center; padding: 32px 0; border-top: 1px solid var(--clr-light-border); margin-top: 32px; }
-.load-more-count { margin-top: 12px; font-size: 13px; color: var(--clr-muted); }
-.gallery-count { margin-left: auto; font-size: 13px; color: var(--clr-muted); }
+.load-more-wrapper { text-align: center; padding: 32px 0; }
 .btn-load-more {
   padding: 14px 40px;
   font-size: 12px;
@@ -2058,25 +2056,7 @@ body.template-customers-register { padding-top: 0; }
    ============================================================ */
 @media (max-width: 768px) {
   body { padding-bottom: 80px; }
-
-  /* Keep filter sidebar visible on mobile — compact 2-column layout */
-  .product-gallery__layout {
-    grid-template-columns: 110px 1fr;
-    gap: 12px;
-  }
-  .product-gallery__filters.desktop-filters {
-    display: block !important;
-    position: static;
-  }
-  .filter-group { padding: 10px 0; }
-  .filter-group__title { font-size: 8px; margin-bottom: 8px; letter-spacing: .1em; }
-  .filter-colors { gap: 5px; }
-  .color-swatch { width: 20px; height: 20px; }
-  .filter-sizes { gap: 4px; flex-direction: column; align-items: flex-start; }
-  .size-btn { padding: 4px 6px; font-size: 10px; width: 100%; text-align: center; }
-  .price-range-slider__values { font-size: 10px; }
-  .btn-clear-filters { font-size: 9px; padding: 6px 0; }
-  .mobile-filter-bar { display: none !important; } /* sidebar replaces the drawer button */
+  .product-gallery__filters.desktop-filters { display: none !important; }
 }
 
 @media (max-width: 480px) {
