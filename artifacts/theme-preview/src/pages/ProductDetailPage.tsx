@@ -71,6 +71,13 @@ export default function ProductDetailPage() {
   const pct    = onSale ? Math.round((product.compare! - product.price) / product.compare! * 100) : 0;
   const avgRating = 4.6;
   const reviewCount = 47;
+  // ADD THIS BLOCK RIGHT HERE 👇
+  if (!product) {
+    return <div style={{ padding: '40px', textAlign: 'center' }}>Product not found</div>;
+  }
+
+  // Your existing code below will now be 100% safe
+  const imgVariants = [product.bg, ...
 
   const imgVariants = [product.bg,
     `linear-gradient(200deg,${product.bg.match(/#[0-9a-f]{6}/gi)?.[1] ?? '#111'},${product.bg.match(/#[0-9a-f]{6}/gi)?.[0] ?? '#222'})`,
