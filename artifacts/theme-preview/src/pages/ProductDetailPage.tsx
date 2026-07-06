@@ -81,7 +81,7 @@ export default function ProductDetailPage() {
   const related = ALL_PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   function doAddToCart() {
-    addItem(product, selectedColor, selectedSize, qty);
+    addItem(product!, selectedColor, selectedSize, qty);
     setCartState('added');
     setError('');
     setTimeout(() => setCartState('idle'), 3000);
