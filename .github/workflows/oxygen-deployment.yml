@@ -6,7 +6,8 @@ on:
 
 defaults:
   run:
-    working-directory: .
+    # Target your specific frontend subfolder directly 🚀
+    working-directory: ./artifacts/theme-preview
 
 jobs:
   deploy:
@@ -30,7 +31,9 @@ jobs:
           version: 10
 
       - name: Install dependencies
-        run: pnpm install --recursive --no-frozen-lockfile
+        # Revert to standard local install since we are inside the correct folder
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build storefront
-        run: pnpm -r --if-present run build
+        # Run standard local vite build configuration
+        run: pnpm run build
