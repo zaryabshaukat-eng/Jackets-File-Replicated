@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import CollectionPage from './pages/CollectionPage';
 import BlogPage from './pages/BlogPage';
 import ContentPages from './pages/ContentPages';
+import ProductDetailPage from './pages/ProductDetailPage';
 
 export default function App() {
   return (
@@ -14,7 +15,7 @@ export default function App() {
           <Route path="/collections/:slug"     component={CollectionPage} />
           <Route path="/blogs/journal/:slug?"  component={BlogPage} />
           <Route path="/pages/:slug"           component={ContentPages} />
-          <Route path="/products/:handle"      component={ContentPages} />
+          <Route path="/products/:handle"      component={ProductDetailPage} />
           <Route path="/cart"                  component={ContentPages} />
           <Route path="/account"               component={ContentPages} />
           <Route path="/account/login"         component={ContentPages} />

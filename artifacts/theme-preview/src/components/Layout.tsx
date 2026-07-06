@@ -1,12 +1,159 @@
-import { useEffect, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation } from '../router';
-import { NAV_LINKS, FOOTER_LINKS } from '../data/products';
+import { NAV_LINKS, FOOTER_LINKS, ALL_PRODUCTS, type Product } from '../data/products';
+
+const CATEGORIES = [
+  { label: 'Bomber Jackets', slug: 'bomber' },
+  { label: 'Leather Jackets', slug: 'leather' },
+  { label: 'Puffer Jackets', slug: 'puffer' },
+  { label: 'Denim Jackets', slug: 'denim' },
+  { label: 'Trench Coats', slug: 'trench' },
+  { label: 'Windbreakers', slug: 'wind' },
+  { label: 'Fleece & Sherpa', slug: 'fleece' },
+];
+
+function LiveSearch({ onClose }: { onClose: () => void }) {
+  const [query, setQuery] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 80);
+  }, []);
+
+  const q = query.trim().toLowerCase();
+
+  const matchedProducts: Product[] = q.length > 0
+    ? ALL_PRODUCTS.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.colors.toLowerCase().includes(q)
+      ).slice(0, 8)
+    : [];
+
+  const matchedCategories = q.length > 0
+    ? CATEGORIES.filter(c => c.label.toLowerCase().includes(q) || c.slug.includes(q))
+    : [];
+
+  const hasResults = matchedProducts.length > 0 || matchedCategories.length > 0;
+
+  return (
+    <div className="search-overlay__bar">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input
+        ref={inputRef}
+        type="search"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="Search jackets, styles, sizes…"
+        className="search-overlay__input"
+        aria-label="Search"
+        onKeyDown={e => { if (e.key === 'Escape') onClose(); }}
+      />
+      <button className="search-overlay__close" onClick={onClose} aria-label="Close search">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      {/* Live Results */}
+      {q.length > 0 && (
+        <div className="search-live-results" role="listbox">
+          {!hasResults ? (
+            <div className="search-live-results__empty">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <p>No results for "<strong>{query}</strong>"</p>
+              <p style={{ fontSize: 13, color: 'var(--clr-muted)', marginTop: 4 }}>Try a different search term or browse categories.</p>
+            </div>
+          ) : (
+            <>
+              {matchedCategories.length > 0 && (
+                <div className="search-live-results__section">
+                  <p className="search-live-results__label">Categories</p>
+                  {matchedCategories.map(c => (
+                    <Link key={c.slug} href={`/collections/${c.slug}`} className="search-live-results__cat" onClick={onClose}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                      {c.label}
+                      <span className="search-live-results__cat-count">
+                        {ALL_PRODUCTS.filter(p => p.category === c.slug).length} products
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {matchedProducts.length > 0 && (
+                <div className="search-live-results__section">
+                  <p className="search-live-results__label">Products</p>
+                  {matchedProducts.map(p => {
+                    const onSale = !!p.compare && p.compare > p.price;
+                    return (
+                      <Link key={p.id} href={`/products/${p.handle}`} className="search-live-results__item" onClick={onClose}>
+                        <div className="search-live-results__img" style={{ background: p.bg }} />
+                        <div className="search-live-results__meta">
+                          <span className="search-live-results__name">
+                            {p.title.split(new RegExp(`(${query})`, 'gi')).map((part, i) =>
+                              part.toLowerCase() === q
+                                ? <mark key={i}>{part}</mark>
+                                : part
+                            )}
+                          </span>
+                          <span className="search-live-results__cat-tag" style={{ textTransform: 'capitalize' }}>{p.category}</span>
+                        </div>
+                        <div className="search-live-results__price">
+                          {onSale && <span style={{ color: 'var(--clr-error)', fontSize: 12 }}>${p.price}</span>}
+                          {!onSale && <span>${p.price}</span>}
+                          {onSale && <span style={{ textDecoration: 'line-through', color: 'var(--clr-muted)', fontSize: 11 }}>${p.compare}</span>}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  {ALL_PRODUCTS.filter(p => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)).length > 8 && (
+                    <Link href={`/collections/all`} className="search-live-results__view-all" onClick={onClose}>
+                      View all results for "{query}"
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </Link>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Default suggestions when empty */}
+      {q.length === 0 && (
+        <div className="search-live-results" role="listbox">
+          <div className="search-live-results__section">
+            <p className="search-live-results__label">Popular Searches</p>
+            {['Bomber Jacket', 'Leather Moto', 'Puffer Coat', 'Trench Coat', 'Windbreaker'].map(s => (
+              <button key={s} className="search-live-results__suggestion"
+                onClick={() => setQuery(s)}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                {s}
+              </button>
+            ))}
+          </div>
+          <div className="search-live-results__section">
+            <p className="search-live-results__label">Browse Categories</p>
+            <div className="search-live-results__cat-grid">
+              {CATEGORIES.slice(0, 6).map(c => (
+                <Link key={c.slug} href={`/collections/${c.slug}`} className="search-live-results__cat-chip" onClick={onClose}>
+                  {c.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const openSearch  = () => { setSearchOpen(true);  document.body.style.overflow = 'hidden'; };
+  const closeSearch = () => { setSearchOpen(false); document.body.style.overflow = ''; };
 
   useEffect(() => {
-    /* Scroll */
     const header  = document.getElementById('siteHeader');
     const mBar    = document.getElementById('mobileBottomBar');
     const onScroll = () => {
@@ -16,7 +163,6 @@ export default function Layout({ children }: { children: ReactNode }) {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
 
-    /* Nav Drawer */
     const drawer   = document.getElementById('navDrawer');
     const toggle   = document.getElementById('navMenuToggle');
     const closeBtn = document.getElementById('navDrawerClose');
@@ -38,49 +184,31 @@ export default function Layout({ children }: { children: ReactNode }) {
       });
     });
 
-    /* Search Overlay */
-    const overlay = document.getElementById('searchOverlay');
-    const sInput  = document.getElementById('searchInput') as HTMLInputElement|null;
-    const sClose  = document.getElementById('searchClose');
-    const hSrch   = document.getElementById('headerSearchToggle');
-    const mSrch   = document.getElementById('mobileSearchToggle');
-    const openSearch  = () => { overlay?.classList.add('is-open'); overlay?.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; setTimeout(()=>sInput?.focus(),80); };
-    const closeSearch = () => { overlay?.classList.remove('is-open'); overlay?.setAttribute('aria-hidden','true'); document.body.style.overflow=''; };
-    hSrch?.addEventListener('click', openSearch);
-    mSrch?.addEventListener('click', openSearch);
-    sClose?.addEventListener('click', closeSearch);
-    overlay?.addEventListener('click', (e) => { if (e.target===overlay) closeSearch(); });
-
     return () => {
       window.removeEventListener('scroll', onScroll);
       document.removeEventListener('keydown', onKey);
     };
-  }, [location]); // re-bind on route change
+  }, [location]);
 
-  // Close nav drawer on navigation
   useEffect(() => {
     const drawer = document.getElementById('navDrawer');
     drawer?.classList.remove('is-open');
     drawer?.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     window.scrollTo({ top: 0 });
+    closeSearch();
   }, [location]);
 
   return (
     <>
       {/* Search Overlay */}
-      <div className="search-overlay" id="searchOverlay" aria-hidden="true" role="dialog" aria-label="Search">
-        <div className="search-overlay__inner">
-          <div className="search-overlay__bar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="search" id="searchInput" placeholder="Search jackets, styles, sizes…" className="search-overlay__input" aria-label="Search" />
-            <button id="searchClose" className="search-overlay__close" aria-label="Close search">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
+      {searchOpen && (
+        <div className="search-overlay is-open" aria-hidden="false" role="dialog" aria-label="Search" onClick={e => { if (e.target === e.currentTarget) closeSearch(); }}>
+          <div className="search-overlay__inner">
+            <LiveSearch onClose={closeSearch} />
           </div>
-          <div className="search-overlay__results" id="searchResults" />
         </div>
-      </div>
+      )}
 
       {/* Mobile Bottom Nav */}
       <nav className="mobile-bottom-bar" id="mobileBottomBar" aria-label="Mobile navigation">
@@ -88,7 +216,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <span>Home</span>
         </Link>
-        <button className="mobile-bottom-bar__item" id="mobileSearchToggle" aria-label="Search">
+        <button className="mobile-bottom-bar__item" id="mobileSearchToggle" aria-label="Search" onClick={openSearch}>
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <span>Search</span>
         </button>
@@ -109,7 +237,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <span className="announcement-bar__sep" aria-hidden="true">|</span>
           <span className="announcement-bar__item">New sales available</span>
           <span className="announcement-bar__sep" aria-hidden="true">|</span>
-          <span className="announcement-bar__item"><Link href="/collections/all" className="announcement-bar__link">Shop The Sale</Link></span>
+          <span className="announcement-bar__item"><Link href="/collections/all" className="announcement-bar__sale-link">Shop The Sale</Link></span>
         </div>
       </div>
 
@@ -121,14 +249,15 @@ export default function Layout({ children }: { children: ReactNode }) {
           </Link>
           <div className="site-header__search desktop-only">
             <form className="header-search-form" role="search" onSubmit={e=>e.preventDefault()}>
-              <input type="search" name="q" placeholder="Search jackets, styles, sizes…" className="header-search-form__input" aria-label="Search" autoComplete="off" />
-              <button type="button" className="header-search-form__btn" id="headerSearchToggle" aria-label="Search">
+              <input type="search" name="q" placeholder="Search jackets, styles, sizes…" className="header-search-form__input" aria-label="Search" autoComplete="off"
+                onFocus={openSearch} readOnly />
+              <button type="button" className="header-search-form__btn" aria-label="Search" onClick={openSearch}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               </button>
             </form>
           </div>
           <div className="site-header__actions">
-            <button className="site-header__icon mobile-only" id="headerSearchToggleMobile" aria-label="Search" onClick={() => document.getElementById('searchOverlay')?.classList.add('is-open')}>
+            <button className="site-header__icon mobile-only" aria-label="Search" onClick={openSearch}>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </button>
             <button className="site-header__menu-dots" id="navMenuToggle" aria-label="Menu" aria-expanded="false" aria-controls="navDrawer">
@@ -164,7 +293,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
               <ul className="nav-submenu">
-                {[['Bomber Jackets','bomber'],['Leather Jackets','leather'],['Puffer Jackets','puffer'],['Denim Jackets','denim'],['Trench Coats','trench'],['Windbreakers','wind'],['Fleece & Sherpa','fleece']].map(([label,slug])=>(
+                {CATEGORIES.map(({ label, slug }) => (
                   <li key={slug}><Link href={`/collections/${slug}`}>{label}</Link></li>
                 ))}
               </ul>
