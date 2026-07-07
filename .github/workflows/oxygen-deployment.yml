@@ -4,11 +4,6 @@ on:
   push:
     branches: [ main ]
 
-defaults:
-  run:
-    # Target your specific frontend subfolder directly 🚀
-    working-directory: ./artifacts/theme-preview
-
 jobs:
   deploy:
     name: Deploy to Oxygen
@@ -30,10 +25,13 @@ jobs:
         with:
           version: 10
 
+      # Install from the workspace root so pnpm can resolve the lockfile
+      # and all cross-package dependencies correctly.
       - name: Install dependencies
-        # Revert to standard local install since we are inside the correct folder
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build storefront
-        # Run standard local vite build configuration
-        run: pnpm run build
+        # Run the build through the workspace filter from the root.
+        # PORT and BASE_PATH are not needed during `vite build` — only the
+        # dev server uses them.
+        run: pnpm --filter @workspace/theme-preview run build
