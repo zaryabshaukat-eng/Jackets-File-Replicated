@@ -46,7 +46,8 @@ jobs:
         run: |
           mv dist/public dist/client
 
-          cat > dist/worker.js << 'WORKEREOF'
+          mkdir -p dist/worker
+          cat > dist/worker/index.js << 'WORKEREOF'
           export default {
             async fetch(request, env) {
               const url = new URL(request.url);
@@ -64,15 +65,18 @@ jobs:
       - name: Verify dist layout
         working-directory: artifacts/theme-preview
         run: |
-          test -f dist/worker.js        || { echo "ERROR: dist/worker.js not found"; exit 1; }
-          test -d dist/client           || { echo "ERROR: dist/client/ not found"; exit 1; }
+          test -f dist/worker/index.js   || { echo "ERROR: dist/worker/index.js not found"; exit 1; }
+          test -d dist/client            || { echo "ERROR: dist/client/ not found"; exit 1; }
           test -f dist/client/index.html || { echo "ERROR: dist/client/index.html not found"; exit 1; }
           echo "dist layout OK:"
-          echo "  worker.js: $(wc -c < dist/worker.js) bytes"
+          echo "  worker/index.js: $(wc -c < dist/worker/index.js) bytes"
           echo "  client/: $(find dist/client -type f | wc -l) files"
 
       - name: Deploy to Oxygen
         uses: shopify/oxygenctl-action@v4
         with:
           path: "./artifacts/theme-preview"
+          build_command: "echo 'pre-built'"
           oxygen_deployment_token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
+          oxygen_worker_dir: "dist/worker"
+          oxygen_client_dir: "dist/client"
