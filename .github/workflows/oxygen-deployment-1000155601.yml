@@ -14,8 +14,7 @@ jobs:
   deploy:
     name: Build & Deploy to Oxygen
     runs-on: ubuntu-latest
-    # Skip deploy on PRs from forks — they cannot access repo secrets,
-    # which would cause the oxygenctl step to fail with an auth error.
+    # Skip deploy on PRs from forks — they cannot access repo secrets.
     if: |
       github.event_name == 'push' ||
       (github.event_name == 'pull_request' &&
@@ -37,27 +36,33 @@ jobs:
         with:
           version: 10
 
-      # Install from the workspace root — pnpm-lock.yaml lives here.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Vite outputs to artifacts/theme-preview/dist/public by default.
+      # Vite outputs to artifacts/theme-preview/dist/public/
       - name: Build storefront
         run: pnpm --filter @workspace/theme-preview run build
 
-      # Oxygen's deploy CLI (called internally by oxygenctl-action) resolves
-      # the worker entry as `dist/worker.js` (a single bundled file) and static
-      # assets as `dist/client/` — matching the output shape of a Hydrogen build.
+      # oxygenctl-action@v4 internally calls:
+      #   oxygen-cli oxygen:deploy
+      #     --path=<path>
+      #     --workerFolder=<oxygen_worker_dir>   (relative to path, default: dist/worker)
+      #     --assetsFolder=<oxygen_client_dir>   (relative to path, default: dist/client)
+      #     --buildCommand=<build_command>        (REQUIRED — empty string breaks the CLI)
       #
-      # Vite writes to dist/public/, so we:
-      #   1. Rename dist/public/ → dist/client/
-      #   2. Write a single dist/worker.js file (not a subdirectory)
+      # The CLI resolves the worker entry as <path>/<workerFolder>/index.js.
+      # So we need:
+      #   dist/worker/index.js   ← Cloudflare Worker entry
+      #   dist/client/           ← static assets (Vite built to dist/public/, rename it)
       - name: Assemble Oxygen dist layout
         working-directory: artifacts/theme-preview
         run: |
+          # Rename Vite output to match Oxygen's expected client dir name
           mv dist/public dist/client
 
-          cat > dist/worker.js << 'WORKEREOF'
+          # Create worker dir with index.js — CLI resolves <workerFolder>/index.js
+          mkdir -p dist/worker
+          cat > dist/worker/index.js << 'WORKEREOF'
           export default {
             async fetch(request, env) {
               const url = new URL(request.url);
@@ -74,23 +79,28 @@ jobs:
           };
           WORKEREOF
 
-      # Fail fast with a clear message if the expected files are missing,
-      # rather than getting a cryptic "file cannot be empty" from the CLI.
+      # Fail fast with a clear message if the layout is wrong, rather than
+      # getting a cryptic "file cannot be empty" error from the Oxygen CLI.
       - name: Verify dist layout
         working-directory: artifacts/theme-preview
         run: |
-          test -f dist/worker.js   || { echo "ERROR: dist/worker.js not found"; exit 1; }
-          test -d dist/client      || { echo "ERROR: dist/client/ not found"; exit 1; }
+          test -f dist/worker/index.js   || { echo "ERROR: dist/worker/index.js not found"; exit 1; }
+          test -d dist/client            || { echo "ERROR: dist/client/ not found"; exit 1; }
           test -f dist/client/index.html || { echo "ERROR: dist/client/index.html not found"; exit 1; }
           echo "dist layout OK:"
-          echo "  worker.js: $(wc -c < dist/worker.js) bytes"
+          echo "  worker/index.js: $(wc -c < dist/worker/index.js) bytes"
           echo "  client/: $(find dist/client -type f | wc -l) files"
 
-      # path points to the artifact root; the CLI finds dist/worker.js and
-      # dist/client/ automatically from there. No build_command is set because
-      # we already built above — the action skips its own build when omitted.
       - name: Deploy to Oxygen
         uses: shopify/oxygenctl-action@v4
         with:
+          # path is the project root; workerFolder and assetsFolder are relative to it.
           path: "./artifacts/theme-preview"
+          # build_command is REQUIRED by the action — empty string causes the CLI to
+          # fail with "file cannot be empty". We already built above, so just echo.
+          build_command: "echo 'pre-built'"
           oxygen_deployment_token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
+          # These match the defaults (dist/worker, dist/client) but are explicit
+          # to make the layout contract obvious.
+          oxygen_worker_dir: "dist/worker"
+          oxygen_client_dir: "dist/client"
