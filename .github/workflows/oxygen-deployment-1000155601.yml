@@ -1,0 +1,46 @@
+name: Deployment to Oxygen
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: oxygen-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy to Oxygen
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      # Install from the workspace root — pnpm-lock.yaml lives here,
+      # not inside the subfolder. npm ci was failing because there is
+      # no package-lock.json (this is a pnpm workspace).
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build & Deploy to Oxygen
+        id: deploy
+        uses: shopify/oxygenctl-action@v8
+        with:
+          token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
+          build_command: "pnpm --filter @workspace/theme-preview run build"
+          path: "./artifacts/theme-preview/dist/public"
