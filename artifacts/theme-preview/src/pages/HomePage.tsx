@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Link } from '../router';
 import ProductCard from '../components/ProductCard';
 import ProductGallerySection from '../components/ProductGallerySection';
-import { ALL_PRODUCTS, BLOG_POSTS } from '../data/products';
+import { useProducts, useBlogPosts } from '../hooks/useShopify';
 
 const HERO_SLIDES = [
   { heading: 'New Season. New Edge.',    sub: 'Premium jackets crafted for the bold.',         cta: 'Explore Collection', href: '/collections/all',        bg: 'linear-gradient(135deg,#0a0a0a 0%,#1a0a00 60%,#0d0706 100%)' },
@@ -10,9 +10,13 @@ const HERO_SLIDES = [
   { heading: 'Design Your Jacket.',      sub: 'Create a one-of-a-kind statement piece.',       cta: 'Design Yours',       href: '/pages/custom-design',    bg: 'linear-gradient(135deg,#1a1a0a 0%,#100e00 60%,#080600 100%)' },
 ];
 
-const FEATURED = ALL_PRODUCTS.slice(0, 8);
-
 export default function HomePage() {
+  const { products, loading: productsLoading } = useProducts({ collection: 'all' });
+  const { posts } = useBlogPosts('journal');
+
+  const featured = products.slice(0, 8);
+  const marqueeProducts = products.length > 0 ? products : [];
+
   useEffect(() => {
     /* Hero Carousel */
     const track = document.getElementById('heroTrack');
@@ -37,11 +41,14 @@ export default function HomePage() {
       track.closest('.hero-carousel')?.addEventListener('mouseleave', start);
       if (slides.length > 1) start();
     }
+    return () => { clearInterval(heroTimer); };
+  }, []);
 
+  useEffect(() => {
     /* Recommended Slider */
     const recTrack = document.getElementById('recTrack');
     let recTimer: ReturnType<typeof setInterval>;
-    if (recTrack) {
+    if (recTrack && featured.length > 0) {
       const cw  = () => (recTrack.querySelector<HTMLElement>('.product-card')?.offsetWidth ?? 260) + 20;
       const bar = document.getElementById('recProgressBar');
       const upd = () => { if (bar) { const m=recTrack.scrollWidth-recTrack.clientWidth; bar.style.width=(m>0?recTrack.scrollLeft/m*80+10:10)+'%'; } };
@@ -55,13 +62,18 @@ export default function HomePage() {
       }, 10000);
       document.querySelector('.recommended-products__wrapper')?.addEventListener('mouseenter', ()=>clearInterval(recTimer));
     }
+    return () => { clearInterval(recTimer); };
+  }, [featured]);
 
+  useEffect(() => {
     /* Marquee pause */
     document.querySelectorAll<HTMLElement>('.marquee-wrapper').forEach(w => {
       w.addEventListener('mouseenter', ()=>w.querySelectorAll<HTMLElement>('.marquee-track').forEach(t=>{t.style.animationPlayState='paused';}));
       w.addEventListener('mouseleave', ()=>w.querySelectorAll<HTMLElement>('.marquee-track').forEach(t=>{t.style.animationPlayState='running';}));
     });
+  }, [marqueeProducts]);
 
+  useEffect(() => {
     /* File upload */
     const drop  = document.getElementById('fileUploadArea');
     const file  = document.getElementById('cd-file') as HTMLInputElement|null;
@@ -73,11 +85,6 @@ export default function HomePage() {
       drop.addEventListener('drop',(e:DragEvent)=>{const f=e.dataTransfer?.files[0];if(f&&prev){prev.textContent=f.name;prev.hidden=false;}});
       file.addEventListener('change',()=>{const f=file.files?.[0];if(f&&prev){prev.textContent=f.name;prev.hidden=false;}});
     }
-
-    return () => {
-      clearInterval(heroTimer);
-      clearInterval(recTimer);
-    };
   }, []);
 
   return (
@@ -126,7 +133,13 @@ export default function HomePage() {
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <div className="recommended-products__track" id="recTrack">
-              {FEATURED.map(p => <ProductCard key={p.id} product={p} className="recommended-card" />)}
+              {productsLoading ? (
+                [...Array(4)].map((_, i) => (
+                  <div key={i} style={{ minWidth: 220, height: 320, borderRadius: 8, background: 'linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+                ))
+              ) : (
+                featured.map(p => <ProductCard key={`${p.id}-${p.handle}`} product={p} className="recommended-card" />)
+              )}
             </div>
             <button className="slider-arrow slider-arrow--next" id="recNext" aria-label="Next">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -140,24 +153,26 @@ export default function HomePage() {
       <ProductGallerySection title="All Products" label="Collections" initialCount={25} loadMoreStep={10} />
 
       {/* ── Marquee ── */}
-      <section className="marquee-section section-spacing">
-        <div className="container">
-          <div className="section-header"><p className="section-label">Featured Products</p><h2 className="section-title">Shop The Look</h2></div>
-        </div>
-        <div className="marquee-wrapper">
-          <div className="marquee-track marquee-track--ltr">
-            {[...ALL_PRODUCTS, ...ALL_PRODUCTS].map((p,i) => <ProductCard key={i} product={p} className="marquee-card" />)}
+      {marqueeProducts.length > 0 && (
+        <section className="marquee-section section-spacing">
+          <div className="container">
+            <div className="section-header"><p className="section-label">Featured Products</p><h2 className="section-title">Shop The Look</h2></div>
           </div>
-        </div>
-        <div className="container" style={{ marginTop: 64 }}>
-          <div className="section-header"><p className="section-label">New Arrivals</p><h2 className="section-title">Just Dropped</h2></div>
-        </div>
-        <div className="marquee-wrapper">
-          <div className="marquee-track marquee-track--rtl">
-            {[...ALL_PRODUCTS.slice(10),...ALL_PRODUCTS.slice(0,10),...ALL_PRODUCTS.slice(10),...ALL_PRODUCTS.slice(0,10)].map((p,i) => <ProductCard key={i} product={p} className="marquee-card" />)}
+          <div className="marquee-wrapper">
+            <div className="marquee-track marquee-track--ltr">
+              {[...marqueeProducts, ...marqueeProducts].map((p,i) => <ProductCard key={`ltr-${i}`} product={p} className="marquee-card" />)}
+            </div>
           </div>
-        </div>
-      </section>
+          <div className="container" style={{ marginTop: 64 }}>
+            <div className="section-header"><p className="section-label">New Arrivals</p><h2 className="section-title">Just Dropped</h2></div>
+          </div>
+          <div className="marquee-wrapper">
+            <div className="marquee-track marquee-track--rtl">
+              {[...marqueeProducts.slice(Math.floor(marqueeProducts.length/2)),...marqueeProducts.slice(0,Math.floor(marqueeProducts.length/2)),...marqueeProducts].map((p,i) => <ProductCard key={`rtl-${i}`} product={p} className="marquee-card" />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Custom Design ── */}
       <section className="custom-design section-spacing">
@@ -237,7 +252,7 @@ export default function HomePage() {
               <h2 className="section-title">From Our Journal</h2>
               <p className="blog-preview__sub">Style guides, care tips, and stories from behind the seams.</p>
               <div className="blog-preview__articles">
-                {BLOG_POSTS.slice(0,3).map(post => (
+                {posts.slice(0,3).map(post => (
                   <article key={post.slug} className="blog-card">
                     <div className="blog-card__body">
                       <p className="blog-card__meta">{post.date} · {post.readTime} read</p>

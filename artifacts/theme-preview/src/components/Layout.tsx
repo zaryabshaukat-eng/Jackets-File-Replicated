@@ -161,31 +161,14 @@ function LiveSearch({ onClose }: { onClose: () => void }) {
 }
 
 function CartDrawer() {
-  const { isOpen, closeCart, items, updateQty, removeItem, subtotal, totalItems } = useCart();
-  const [checkoutState, setCheckoutState] = useState<'idle'|'done'>('idle');
+  const { isOpen, closeCart, items, updateQty, removeItem, subtotal, totalItems, checkout, checkoutLoading, checkoutError } = useCart();
 
-  if (checkoutState === 'done') {
-    return (
-      <>
-        <div className={`cart-drawer-overlay${isOpen ? ' is-open' : ''}`} onClick={closeCart} aria-hidden="true" />
-        <aside className={`cart-drawer${isOpen ? ' is-open' : ''}`} aria-label="Shopping cart" role="dialog" aria-modal="true">
-          <div className="cart-drawer__head">
-            <h2 className="cart-drawer__title">Order Confirmed!</h2>
-            <button className="cart-drawer__close" onClick={() => { setCheckoutState('idle'); closeCart(); }} aria-label="Close cart">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-          <div className="cart-drawer__body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 16, padding: '40px 24px' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--clr-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, textAlign: 'center' }}>Thank you for your order!</h3>
-            <p style={{ fontSize: 14, color: 'var(--clr-muted)', textAlign: 'center' }}>Your order has been received and is being processed.</p>
-            <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => { setCheckoutState('idle'); closeCart(); }}>Continue Shopping</button>
-          </div>
-        </aside>
-      </>
-    );
+  function CartItemImage({ item }: { item: CartItem }) {
+    const [err, setErr] = useState(false);
+    if (item.imageUrl && !err) {
+      return <img src={item.imageUrl} alt={item.title} onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />;
+    }
+    return <div style={{ background: item.bg, width: '100%', height: '100%' }} />;
   }
 
   return (
@@ -215,7 +198,9 @@ function CartDrawer() {
             <div className="cart-drawer__items">
               {items.map((item: CartItem) => (
                 <div key={item.id} className="cart-drawer-item">
-                  <div className="cart-drawer-item__img" style={{ background: item.bg }} />
+                  <div className="cart-drawer-item__img" style={{ overflow: 'hidden' }}>
+                    <CartItemImage item={item} />
+                  </div>
                   <div className="cart-drawer-item__body">
                     <Link href={`/products/${item.handle}`} className="cart-drawer-item__title" onClick={closeCart}>
                       {item.title}
@@ -244,10 +229,28 @@ function CartDrawer() {
                 <span>${subtotal.toFixed(2)}</span>
               </div>
               <p className="cart-drawer__shipping-note">Shipping & taxes calculated at checkout</p>
-              <button className="btn btn-primary btn-full cart-drawer__checkout" onClick={() => setCheckoutState('done')}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg>
-                Checkout · ${subtotal.toFixed(2)}
+              {checkoutError && (
+                <p style={{ fontSize: 12, color: 'var(--clr-error)', marginBottom: 8 }}>{checkoutError}</p>
+              )}
+              <button
+                className="btn btn-primary btn-full cart-drawer__checkout"
+                onClick={checkout}
+                disabled={checkoutLoading}
+                style={{ opacity: checkoutLoading ? 0.7 : 1 }}
+              >
+                {checkoutLoading ? (
+                  <>
+                    <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                    Redirecting to checkout…
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg>
+                    Checkout · ${subtotal.toFixed(2)}
+                  </>
+                )}
               </button>
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               <button className="cart-drawer__continue" onClick={closeCart}>
                 Continue Shopping
               </button>

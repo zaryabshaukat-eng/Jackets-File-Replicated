@@ -1,2 +1,3 @@
 - [Shopify theme conventions](shopify-theme-conventions.md) — theme uses assets/main.css and assets/main.js (not theme.css/theme.js); img_url is deprecated — always use image_url filter.
 - [Theme-preview workspace setup](theme-preview-workspace-setup.md) — pnpm-workspace.yaml was missing; Shopify CLI in root package.json blocked installs due to liquidjs firewall block.
+- [Shopify Storefront API — theme-preview wiring](shopify-theme-preview-setup.md) — credential pattern, checkout flow rules, workflow PORT/BASE_PATH requirement.

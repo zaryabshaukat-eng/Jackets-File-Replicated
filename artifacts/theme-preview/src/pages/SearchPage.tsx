@@ -1,7 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Link, useSearchParams, useLocation } from '../router';
-import { ALL_PRODUCTS, COLOR_MAP, type Product } from '../data/products';
+import { COLOR_MAP } from '../data/products';
+import type { Product } from '../lib/shopify';
 import ProductCard from '../components/ProductCard';
+import { useProducts } from '../hooks/useShopify';
 
 const SIZES  = ['XS','S','M','L','XL','XXL'];
 const COLORS = [
@@ -27,6 +29,23 @@ const CATEGORIES = [
 ];
 type SortKey = 'relevance' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
 
+function Skeleton() {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 24 }}>
+      {[...Array(6)].map((_,i) => (
+        <div key={i} style={{ borderRadius: 8, overflow: 'hidden' }}>
+          <div style={{ height: 260, background: 'linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+          <div style={{ padding: '12px 0' }}>
+            <div style={{ height: 14, background: '#f0f0f0', borderRadius: 4, marginBottom: 8 }} />
+            <div style={{ height: 12, background: '#f0f0f0', borderRadius: 4, width: '60%' }} />
+          </div>
+        </div>
+      ))}
+      <style>{`@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }`}</style>
+    </div>
+  );
+}
+
 export default function SearchPage() {
   const params   = useSearchParams();
   const [, nav]  = useLocation();
@@ -44,36 +63,55 @@ export default function SearchPage() {
   const [viewMode,    setView]   = useState<'grid'|'list'>('grid');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Sync query state when URL param changes
+  // Debounced search against Shopify
+  const [debouncedSearch, setDebouncedSearch] = useState(rawQ);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     setQuery(rawQ);
     setInput(rawQ);
+    setDebouncedSearch(rawQ);
     setVisible(24);
   }, [rawQ]);
 
-  // Reset visible when filters change
-  useEffect(() => { setVisible(24); }, [query, priceMin, priceMax, activeColor, activeSize, activecat, sortKey]);
+  // Load all products for browsing (when no query)
+  const { products: allProducts, loading: allLoading } = useProducts({ collection: 'all' });
+  // Load search results when there's a query
+  const { products: searchResults, loading: searchLoading } = useProducts(
+    debouncedSearch ? { search: debouncedSearch } : {}
+  );
+
+  const loading = debouncedSearch ? searchLoading : allLoading;
+  const baseProducts = debouncedSearch ? searchResults : allProducts;
 
   const q = query.trim().toLowerCase();
 
+  // Score and filter products
   const scored: Array<{ product: Product; score: number }> = useMemo(() => {
-    return ALL_PRODUCTS.map(p => {
+    return baseProducts.map(p => {
       let score = 0;
       if (!q) { score = 1; }
       else {
-        const title    = p.title.toLowerCase();
-        const cat      = p.category.toLowerCase();
-        const colors   = p.colors.toLowerCase();
-        if (title === q)                    score += 100;
-        else if (title.startsWith(q))       score += 50;
-        else if (title.includes(q))         score += 30;
-        if (cat.includes(q))                score += 20;
-        if (colors.includes(q))             score += 10;
-        if (p.badge.includes(q))            score += 5;
+        const title  = p.title.toLowerCase();
+        const cat    = p.category.toLowerCase();
+        const colors = p.colors.toLowerCase();
+        if (title === q)              score += 100;
+        else if (title.startsWith(q)) score += 50;
+        else if (title.includes(q))   score += 30;
+        if (cat.includes(q))          score += 20;
+        if (colors.includes(q))       score += 10;
+        if (p.badge.includes(q))      score += 5;
+        if (p.tags?.some(t => t.toLowerCase().includes(q))) score += 8;
       }
       return { product: p, score };
     }).filter(({ score }) => score > 0);
-  }, [q]);
+  }, [baseProducts, q]);
+
+  // Dynamic price max
+  const dataMaxPrice = useMemo(() => {
+    if (baseProducts.length === 0) return 500;
+    return Math.ceil(Math.max(...baseProducts.map(p => p.price)) / 50) * 50;
+  }, [baseProducts]);
 
   const filtered: Product[] = useMemo(() => {
     return scored
@@ -96,23 +134,26 @@ export default function SearchPage() {
       .map(({ product }) => product);
   }, [scored, sortKey, priceMin, priceMax, activeColor, activeSize, activecat]);
 
+  useEffect(() => { setVisible(24); }, [query, priceMin, priceMax, activeColor, activeSize, activecat, sortKey]);
+
   const shown   = filtered.slice(0, visible);
   const hasMore = visible < filtered.length;
 
-  const fillLeft  = (priceMin / 500 * 100).toFixed(1) + '%';
-  const fillRight = ((500 - priceMax) / 500 * 100).toFixed(1) + '%';
+  const fillLeft  = (priceMin / dataMaxPrice * 100).toFixed(1) + '%';
+  const fillRight = ((dataMaxPrice - priceMax) / dataMaxPrice * 100).toFixed(1) + '%';
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = inputVal.trim();
     if (trimmed) nav(`/search?q=${encodeURIComponent(trimmed)}`);
+    else nav('/search');
   }
 
   function clearFilters() {
-    setMin(0); setMax(500); setColor(''); setSize(''); setCat(''); setSort('relevance');
+    setMin(0); setMax(dataMaxPrice); setColor(''); setSize(''); setCat(''); setSort('relevance');
   }
 
-  const hasActiveFilters = priceMin > 0 || priceMax < 500 || activeColor || activeSize || activecat;
+  const hasActiveFilters = priceMin > 0 || priceMax < dataMaxPrice || activeColor || activeSize || activecat;
 
   return (
     <div>
@@ -155,7 +196,7 @@ export default function SearchPage() {
             </button>
           </form>
 
-          {q && (
+          {q && !loading && (
             <p style={{ marginTop:16, fontSize:13, color:'rgba(255,255,255,.5)' }}>
               {filtered.length === 0 ? 'No results found' : `${filtered.length} product${filtered.length !== 1 ? 's' : ''} found`}
             </p>
@@ -171,7 +212,7 @@ export default function SearchPage() {
             {/* ── Filter Sidebar (desktop) ── */}
             <aside className="product-gallery__filters desktop-filters" aria-label="Filters">
 
-              {/* Sort (sidebar on desktop) */}
+              {/* Sort */}
               <div className="filter-group">
                 <h3 className="filter-group__title">Sort By</h3>
                 <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
@@ -215,7 +256,7 @@ export default function SearchPage() {
                       }}>
                       {c.label}
                       <span style={{ fontSize:11, color:'var(--clr-muted)' }}>
-                        {c.key ? ALL_PRODUCTS.filter(p=>p.category===c.key).length : ALL_PRODUCTS.length}
+                        {c.key ? baseProducts.filter(p=>p.category===c.key).length : baseProducts.length}
                       </span>
                     </button>
                   ))}
@@ -228,9 +269,9 @@ export default function SearchPage() {
                 <div className="price-range-slider">
                   <div className="price-range-slider__track">
                     <div className="price-range-slider__fill" style={{ left:fillLeft, right:fillRight }} />
-                    <input type="range" min="0" max="500" step="10" value={priceMin} className="price-range-slider__input price-range-slider__input--min" aria-label="Min price"
+                    <input type="range" min="0" max={dataMaxPrice} step="10" value={priceMin} className="price-range-slider__input price-range-slider__input--min" aria-label="Min price"
                       onChange={e => setMin(Math.min(+e.target.value, priceMax))} />
-                    <input type="range" min="0" max="500" step="10" value={priceMax} className="price-range-slider__input price-range-slider__input--max" aria-label="Max price"
+                    <input type="range" min="0" max={dataMaxPrice} step="10" value={priceMax} className="price-range-slider__input price-range-slider__input--max" aria-label="Max price"
                       onChange={e => setMax(Math.max(+e.target.value, priceMin))} />
                   </div>
                   <div className="price-range-slider__values">
@@ -255,9 +296,9 @@ export default function SearchPage() {
               <div className="filter-group">
                 <h3 className="filter-group__title">Size</h3>
                 <div className="filter-sizes">
-                  <button className={`size-btn${activeSize===''?' size-btn--active':''}`} onClick={() => setSize('')}>All</button>
-                  {SIZES.map(s => (
-                    <button key={s} className={`size-btn${activeSize===s?' size-btn--active':''}`} onClick={() => setSize(s)}>{s}</button>
+                  <button className={`size-btn${activeSize===''?' size-btn--active':''}`} onClick={()=>setSize('')}>All</button>
+                  {SIZES.map(s=>(
+                    <button key={s} className={`size-btn${activeSize===s?' size-btn--active':''}`} onClick={()=>setSize(s)}>{s}</button>
                   ))}
                 </div>
               </div>
@@ -267,10 +308,24 @@ export default function SearchPage() {
               )}
             </aside>
 
-            {/* ── Results Column ── */}
+            {/* ── Products Column ── */}
             <div className="product-gallery__main">
+              {/* Mobile toolbar */}
+              <div className="mobile-filter-toolbar mobile-only">
+                <button className="mobile-filter-btn" onClick={() => setFiltersOpen(true)}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+                  Filter
+                </button>
+                <select className="mobile-sort-select" value={sortKey} onChange={e=>setSort(e.target.value as SortKey)}>
+                  <option value="relevance">Best Match</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="name-asc">Name: A → Z</option>
+                  <option value="name-desc">Name: Z → A</option>
+                </select>
+              </div>
 
-              {/* Toolbar */}
+              {/* Desktop toolbar */}
               <div className="desktop-view-toggle desktop-only">
                 <span className="view-label">View:</span>
                 <button className={`view-toggle-btn${viewMode==='grid'?' view-toggle-btn--active':''}`} onClick={()=>setView('grid')} aria-label="Grid view">
@@ -279,167 +334,34 @@ export default function SearchPage() {
                 <button className={`view-toggle-btn${viewMode==='list'?' view-toggle-btn--active':''}`} onClick={()=>setView('list')} aria-label="List view">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                 </button>
-
-                {/* Sort dropdown (desktop toolbar) */}
-                <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:12 }}>
-                  <label htmlFor="sort-select" style={{ fontSize:13, color:'var(--clr-muted)' }}>Sort:</label>
-                  <select id="sort-select" value={sortKey} onChange={e=>setSort(e.target.value as SortKey)}
-                    style={{ fontSize:13, padding:'6px 10px', border:'1px solid var(--clr-light-border)', borderRadius:4, background:'#fff', cursor:'pointer' }}>
-                    <option value="relevance">Best Match</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="name-asc">Name: A → Z</option>
-                    <option value="name-desc">Name: Z → A</option>
-                  </select>
-                  <span style={{ fontSize:13, color:'var(--clr-muted)' }}>{filtered.length} results</span>
-                </div>
+                <span style={{ marginLeft:'auto', fontSize:13, color:'var(--clr-muted)' }}>
+                  {loading ? 'Loading…' : `${filtered.length} products`}
+                </span>
               </div>
 
-              {/* Mobile toolbar */}
-              <div className="mobile-filter-bar mobile-only" style={{ borderBottom:'1px solid var(--clr-light-border)', paddingBottom:12, marginBottom:16, gap:8 }}>
-                <span style={{ fontSize:12, color:'var(--clr-muted)' }}>{filtered.length} results</span>
-                <div style={{ display:'flex', alignItems:'center', gap:8, marginLeft:'auto' }}>
-                  <button onClick={()=>setFiltersOpen(o=>!o)} style={{
-                    fontSize:12, padding:'5px 12px', border:'1px solid var(--clr-light-border)',
-                    borderRadius:4, background:'none', cursor:'pointer', display:'flex', gap:6, alignItems:'center',
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-                    Filters {hasActiveFilters && <span style={{ background:'var(--clr-gold)', color:'#000', borderRadius:10, padding:'1px 6px', fontSize:10 }}>!</span>}
-                  </button>
-                  <div className="mobile-view-toggle">
-                    <button className={`view-toggle-btn${viewMode==='grid'?' view-toggle-btn--active':''}`} onClick={()=>setView('grid')} aria-label="Grid view">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                    </button>
-                    <button className={`view-toggle-btn${viewMode==='list'?' view-toggle-btn--active':''}`} onClick={()=>setView('list')} aria-label="List view">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile filter panel */}
-              {filtersOpen && (
-                <div style={{ background:'var(--clr-bg-soft)', borderRadius:8, padding:24, marginBottom:24, display:'flex', flexDirection:'column', gap:20 }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                    <h3 style={{ fontWeight:600 }}>Filters</h3>
-                    <button onClick={()=>setFiltersOpen(false)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, lineHeight:1 }}>×</button>
-                  </div>
-                  <div>
-                    <p style={{ fontSize:12, fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:10, color:'var(--clr-muted)' }}>Sort By</p>
-                    <select value={sortKey} onChange={e=>setSort(e.target.value as SortKey)}
-                      style={{ width:'100%', padding:'8px 12px', border:'1px solid var(--clr-light-border)', borderRadius:4 }}>
-                      <option value="relevance">Best Match</option>
-                      <option value="price-asc">Price: Low to High</option>
-                      <option value="price-desc">Price: High to Low</option>
-                      <option value="name-asc">Name: A → Z</option>
-                      <option value="name-desc">Name: Z → A</option>
-                    </select>
-                  </div>
-                  <div>
-                    <p style={{ fontSize:12, fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:10, color:'var(--clr-muted)' }}>Category</p>
-                    <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-                      {CATEGORIES.map(c => (
-                        <button key={c.key} onClick={()=>setCat(c.key)}
-                          style={{ padding:'5px 12px', borderRadius:20, fontSize:12, border:'1px solid', cursor:'pointer',
-                            background: activecat===c.key ? 'var(--clr-black)' : 'transparent',
-                            color: activecat===c.key ? '#fff' : 'var(--clr-mid)',
-                            borderColor: activecat===c.key ? 'var(--clr-black)' : 'var(--clr-light-border)',
-                          }}>
-                          {c.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p style={{ fontSize:12, fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:10, color:'var(--clr-muted)' }}>Size</p>
-                    <div className="filter-sizes">
-                      <button className={`size-btn${activeSize===''?' size-btn--active':''}`} onClick={()=>setSize('')}>All</button>
-                      {SIZES.map(s=><button key={s} className={`size-btn${activeSize===s?' size-btn--active':''}`} onClick={()=>setSize(s)}>{s}</button>)}
-                    </div>
-                  </div>
-                  {hasActiveFilters && (
-                    <button className="btn-clear-filters" onClick={()=>{clearFilters();setFiltersOpen(false);}}>Clear All Filters</button>
-                  )}
-                </div>
-              )}
-
-              {/* Results */}
-              {q && filtered.length === 0 ? (
-                <div style={{ padding:'80px 0', textAlign:'center' }}>
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" style={{ opacity:.3, marginBottom:20 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <h2 style={{ fontFamily:'var(--font-serif)', fontSize:28, fontWeight:400, marginBottom:12 }}>No results for "{query}"</h2>
-                  <p style={{ color:'var(--clr-muted)', fontSize:14, maxWidth:400, margin:'0 auto 32px' }}>
-                    Try a different search term, check for typos, or browse our collections.
-                  </p>
-                  <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
-                    <Link href="/collections/all" className="btn btn-primary" style={{ display:'inline-flex' }}>Browse All Jackets</Link>
-                    {hasActiveFilters && (
-                      <button className="btn btn-outline" onClick={clearFilters}>Clear Filters</button>
-                    )}
-                  </div>
-                  <div style={{ marginTop:48 }}>
-                    <p style={{ fontSize:13, color:'var(--clr-muted)', marginBottom:16 }}>Popular searches:</p>
-                    <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
-                      {['Bomber Jacket','Leather Moto','Puffer Coat','Trench Coat','Windbreaker'].map(s=>(
-                        <button key={s} onClick={()=>nav(`/search?q=${encodeURIComponent(s)}`)}
-                          style={{ padding:'6px 16px', borderRadius:20, fontSize:13, border:'1px solid var(--clr-light-border)', background:'none', cursor:'pointer', color:'var(--clr-mid)' }}>
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
+              {loading ? <Skeleton /> : (
                 <>
-                  {/* Active filter chips */}
-                  {hasActiveFilters && (
-                    <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:16 }}>
-                      {activecat && (
-                        <span style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'4px 12px', background:'var(--clr-black)', color:'#fff', borderRadius:20, fontSize:12 }}>
-                          {CATEGORIES.find(c=>c.key===activecat)?.label}
-                          <button onClick={()=>setCat('')} style={{ background:'none',border:'none',cursor:'pointer',color:'#fff',lineHeight:1,padding:0 }}>×</button>
-                        </span>
+                  {shown.length === 0 ? (
+                    <div style={{ padding:'60px 0', textAlign:'center' }}>
+                      <p style={{ fontSize:18, marginBottom:12, color:'var(--clr-mid)' }}>
+                        {q ? `No products found for "${query}"` : 'No products match your filters.'}
+                      </p>
+                      {hasActiveFilters && (
+                        <button className="btn-clear-filters" onClick={clearFilters}>Clear Filters</button>
                       )}
-                      {activeColor && (
-                        <span style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'4px 12px', background:'var(--clr-black)', color:'#fff', borderRadius:20, fontSize:12 }}>
-                          {activeColor}
-                          <button onClick={()=>setColor('')} style={{ background:'none',border:'none',cursor:'pointer',color:'#fff',lineHeight:1,padding:0 }}>×</button>
-                        </span>
-                      )}
-                      {activeSize && (
-                        <span style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'4px 12px', background:'var(--clr-black)', color:'#fff', borderRadius:20, fontSize:12 }}>
-                          Size {activeSize}
-                          <button onClick={()=>setSize('')} style={{ background:'none',border:'none',cursor:'pointer',color:'#fff',lineHeight:1,padding:0 }}>×</button>
-                        </span>
-                      )}
-                      {(priceMin > 0 || priceMax < 500) && (
-                        <span style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'4px 12px', background:'var(--clr-black)', color:'#fff', borderRadius:20, fontSize:12 }}>
-                          ${priceMin}–${priceMax}
-                          <button onClick={()=>{setMin(0);setMax(500);}} style={{ background:'none',border:'none',cursor:'pointer',color:'#fff',lineHeight:1,padding:0 }}>×</button>
-                        </span>
-                      )}
-                      <button onClick={clearFilters} style={{ padding:'4px 12px', background:'none', border:'1px solid var(--clr-light-border)', borderRadius:20, fontSize:12, cursor:'pointer', color:'var(--clr-muted)' }}>
-                        Clear all
-                      </button>
+                    </div>
+                  ) : (
+                    <div className={`product-gallery__grid${viewMode==='list'?' product-gallery__grid--list':''}`}>
+                      {shown.map(p => <ProductCard key={`${p.id}-${p.handle}`} product={p} />)}
                     </div>
                   )}
-
-                  <div className="products-grid" data-view={viewMode}>
-                    {shown.map(p => (
-                      <ProductCard key={p.id} product={p} />
-                    ))}
-                  </div>
 
                   {hasMore && (
-                    <div style={{ textAlign:'center', marginTop:48 }}>
-                      <button className="btn-load-more" onClick={()=>setVisible(v=>Math.min(v+12, filtered.length))}>
-                        Load More
-                        <span style={{ marginLeft:8, opacity:.6, fontSize:12 }}>({filtered.length - visible} remaining)</span>
+                    <div style={{ textAlign:'center', marginTop:40 }}>
+                      <button className="btn btn-outline" onClick={() => setVisible(v => v + 24)} style={{ minWidth:180 }}>
+                        Load More ({filtered.length - visible} remaining)
                       </button>
                     </div>
-                  )}
-                  {!hasMore && filtered.length > 12 && (
-                    <p style={{ textAlign:'center', marginTop:40, fontSize:13, color:'var(--clr-muted)' }}>All {filtered.length} results shown</p>
                   )}
                 </>
               )}
