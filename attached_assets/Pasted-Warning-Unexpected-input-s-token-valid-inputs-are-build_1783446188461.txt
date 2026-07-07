@@ -1,0 +1,32 @@
+Warning: Unexpected input(s) 'token', valid inputs are ['build_command', 'commit_message', 'commit_timestamp', 'oxygen_deployment_token', 'oxygen_worker_dir', 'oxygen_client_dir', 'oxygen_deployment_verification', 'oxygen_deployment_verification_max_duration', 'path']
+Run shopify/oxygenctl-action@v4
+Run endpoint="https://metrics.myshopify.dev"
+OK
+Run echo "Deploying to Oxygen..."
+Deploying to Oxygen...
+npm warn exec The following packages were not found and will be installed: @shopify/oxygen-cli@3.1.1, @shopify/cli-kit@3.70.0
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+Error processing deployment token. Please check your token and try again.
+╭─ error ──────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  EEXIT: 1                                                                    │
+│                                                                              │
+│  To investigate the issue, examine this stack trace:                         │
+│    at run (../../../.npm/_npx/2da2680dbc75d413/node_modules/@shopify/oxygen  │
+│    -cli/src/commands/oxygen/deploy.ts:183)                                   │
+│      consoleError(error as string);                                          │
+│    at async runCLI (../../../.npm/_npx/2da2680dbc75d413/node_modules/@shopi  │
+│    fy/cli-kit/src/public/node/cli.ts:95)                                     │
+│      await oclif.default.run(undefined, config)                              │
+│    at async runOxygenCLI (../../../.npm/_npx/2da2680dbc75d413/node_modules/  │
+│    @shopify/oxygen-cli/src/index.ts:4)                                       │
+│      await runCLI({                                                          │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+ ›   Error: EEXIT: 1
+ ›   Code: EEXIT
+Error: Process completed with exit code 1.
