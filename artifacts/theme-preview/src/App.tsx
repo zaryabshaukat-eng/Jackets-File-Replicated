@@ -6,6 +6,7 @@ import CollectionPage from './pages/CollectionPage';
 import BlogPage from './pages/BlogPage';
 import ContentPages from './pages/ContentPages';
 import ProductDetailPage from './pages/ProductDetailPage';
+import SearchPage from './pages/SearchPage';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Layout>
           <Switch>
             <Route path="/"                      component={HomePage} />
+            <Route path="/search"                component={SearchPage} />
             <Route path="/collections/:slug"     component={CollectionPage} />
             <Route path="/blogs/journal/:slug?"  component={BlogPage} />
             <Route path="/pages/:slug"           component={ContentPages} />

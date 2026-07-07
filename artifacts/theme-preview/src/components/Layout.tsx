@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { Link, useLocation } from '../router';
 import { NAV_LINKS, FOOTER_LINKS, ALL_PRODUCTS, type Product } from '../data/products';
 import { useCart, type CartItem } from '../context/CartContext';
@@ -16,10 +16,18 @@ const CATEGORIES = [
 function LiveSearch({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const [, nav] = useLocation();
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 80);
   }, []);
+
+  const navigateToSearch = useCallback((term: string) => {
+    const t = term.trim();
+    if (!t) return;
+    onClose();
+    nav(`/search?q=${encodeURIComponent(t)}`);
+  }, [nav, onClose]);
 
   const q = query.trim().toLowerCase();
 
@@ -48,7 +56,10 @@ function LiveSearch({ onClose }: { onClose: () => void }) {
         placeholder="Search jackets, styles, sizes…"
         className="search-overlay__input"
         aria-label="Search"
-        onKeyDown={e => { if (e.key === 'Escape') onClose(); }}
+        onKeyDown={e => {
+          if (e.key === 'Escape') onClose();
+          if (e.key === 'Enter') navigateToSearch(query);
+        }}
       />
       <button className="search-overlay__close" onClick={onClose} aria-label="Close search">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -105,12 +116,14 @@ function LiveSearch({ onClose }: { onClose: () => void }) {
                       </Link>
                     );
                   })}
-                  {ALL_PRODUCTS.filter(p => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)).length > 8 && (
-                    <Link href={`/collections/all`} className="search-live-results__view-all" onClick={onClose}>
-                      View all results for "{query}"
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                    </Link>
-                  )}
+                  <button
+                    className="search-live-results__view-all"
+                    onClick={() => navigateToSearch(query)}
+                    style={{ width:'100%', textAlign:'left', cursor:'pointer', background:'none', border:'none', padding:0 }}
+                  >
+                    View all results for "{query}"
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </button>
                 </div>
               )}
             </>

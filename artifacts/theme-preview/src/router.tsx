@@ -13,6 +13,13 @@ function getHash(): string {
   return h.startsWith('#') ? (h.slice(1) || '/') : '/';
 }
 
+/** Split a hash location into its path and search-param parts */
+function splitLocation(loc: string): { path: string; search: string } {
+  const idx = loc.indexOf('?');
+  if (idx === -1) return { path: loc, search: '' };
+  return { path: loc.slice(0, idx), search: loc.slice(idx) };
+}
+
 const LocCtx    = createContext<string>('/');
 const NavCtx    = createContext<(to: string) => void>(() => {});
 const ParamsCtx = createContext<Record<string, string>>({});
@@ -45,6 +52,13 @@ export function useLocation(): [string, (to: string) => void] {
 
 export function useParams<T extends Record<string, string | undefined>>(): T {
   return useContext(ParamsCtx) as unknown as T;
+}
+
+/** Read query params from the current hash location */
+export function useSearchParams(): URLSearchParams {
+  const [loc] = useLocation();
+  const { search } = splitLocation(loc);
+  return new URLSearchParams(search);
 }
 
 /* ── Link ─────────────────────────────────────────── */
@@ -101,6 +115,7 @@ export function Route({ component: Comp, children }: RouteProps) {
 /* ── Switch ───────────────────────────────────────── */
 export function Switch({ children }: { children: ReactNode }) {
   const [loc] = useLocation();
+  const { path: locPath } = splitLocation(loc);
   const nodes = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
 
   for (const child of nodes) {
@@ -109,7 +124,7 @@ export function Switch({ children }: { children: ReactNode }) {
       // Catch-all / default route
       return <ParamsCtx.Provider value={{}}>{child}</ParamsCtx.Provider>;
     }
-    const { ok, params } = matchPath(path, loc);
+    const { ok, params } = matchPath(path, locPath);
     if (ok) {
       return <ParamsCtx.Provider value={params}>{child}</ParamsCtx.Provider>;
     }
