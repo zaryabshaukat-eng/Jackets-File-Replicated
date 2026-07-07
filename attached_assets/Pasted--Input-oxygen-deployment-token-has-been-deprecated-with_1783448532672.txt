@@ -1,0 +1,36 @@
+ Input 'oxygen_deployment_token' has been deprecated with message: The shopify/oxygenctl-action is being deprecated and all merchants are encouraged to migrate to the Hydrogen CLI deploy command. To use the deploy command, upgrade your Hydrogen project to use Hydrogen CLI v7.0.0 or later. See our example GitHub workflow https://shopify.dev/docs/custom-storefronts/hydrogen/deployments/github#oxygen-github-action
+Run shopify/oxygenctl-action@v4
+Run endpoint="https://metrics.myshopify.dev"
+OK
+Run echo "Deploying to Oxygen..."
+Deploying to Oxygen...
+npm warn exec The following packages were not found and will be installed: @shopify/cli-kit@3.70.0, @shopify/oxygen-cli@3.1.1
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+✔ Build initiated successfully with id gid://oxygen-hub/Build/3934402.
+Build failed with: Build failed with error code: TypeError [ERR_INVALID_ARG_VALUE]: The argument 'file' cannot be empty. Received '', cancelling build.
+Build with id gid://oxygen-hub/Build/3934402 cancelled.
+Build failed with error code: TypeError [ERR_INVALID_ARG_VALUE]: The argument 'file' cannot be empty. Received ''
+╭─ error ──────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  EEXIT: 1                                                                    │
+│                                                                              │
+│  To investigate the issue, examine this stack trace:                         │
+│    at run (../../../.npm/_npx/2da2680dbc75d413/node_modules/@shopify/oxygen  │
+│    -cli/src/commands/oxygen/deploy.ts:183)                                   │
+│      consoleError(error as string);                                          │
+│    at processTicksAndRejections (node:internal/process/task_queues:103)      │
+│    at async runCLI (../../../.npm/_npx/2da2680dbc75d413/node_modules/@shopi  │
+│    fy/cli-kit/src/public/node/cli.ts:95)                                     │
+│      await oclif.default.run(undefined, config)                              │
+│    at async runOxygenCLI (../../../.npm/_npx/2da2680dbc75d413/node_modules/  │
+│    @shopify/oxygen-cli/src/index.ts:4)                                       │
+│      await runCLI({                                                          │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+ ›   Error: EEXIT: 1
+ ›   Code: EEXIT
+Error: Process completed with exit code 1.

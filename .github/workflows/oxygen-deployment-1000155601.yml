@@ -37,30 +37,34 @@ jobs:
         with:
           version: 10
 
-      # Install from the workspace root — pnpm-lock.yaml lives here,
-      # not inside the subfolder.
+      # Install from the workspace root — pnpm-lock.yaml lives here.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Build the Vite SPA — outputs to artifacts/theme-preview/dist/public
+      # Vite outputs to artifacts/theme-preview/dist/public by default.
       - name: Build storefront
         run: pnpm --filter @workspace/theme-preview run build
 
-      # Oxygen is a server-side (Cloudflare Workers) platform and requires a
-      # worker entry file. This minimal worker serves the Vite SPA: static
-      # assets are served from Oxygen's CDN binding; all other routes fall back
-      # to index.html so client-side routing works correctly.
-      - name: Create Oxygen SPA worker
+      # Oxygen's deploy CLI (called internally by oxygenctl-action) resolves
+      # the worker entry as `dist/worker.js` (a single bundled file) and static
+      # assets as `dist/client/` — matching the output shape of a Hydrogen build.
+      #
+      # Vite writes to dist/public/, so we:
+      #   1. Rename dist/public/ → dist/client/
+      #   2. Write a single dist/worker.js file (not a subdirectory)
+      - name: Assemble Oxygen dist layout
+        working-directory: artifacts/theme-preview
         run: |
-          mkdir -p artifacts/theme-preview/dist/worker
-          cat > artifacts/theme-preview/dist/worker/index.js << 'WORKEREOF'
+          mv dist/public dist/client
+
+          cat > dist/worker.js << 'WORKEREOF'
           export default {
             async fetch(request, env) {
               const url = new URL(request.url);
               // Serve static assets (JS, CSS, images, fonts…)
               const staticRes = await env.assets.fetch(request).catch(() => null);
               if (staticRes && staticRes.status !== 404) return staticRes;
-              // All other routes → index.html (enables client-side routing)
+              // All other paths fall back to index.html for client-side routing
               return env.assets.fetch(
                 new Request(new URL('/index.html', url.origin), {
                   headers: request.headers,
@@ -70,10 +74,23 @@ jobs:
           };
           WORKEREOF
 
-      # Deploy: tell Oxygen where the worker and the client assets are separately.
+      # Fail fast with a clear message if the expected files are missing,
+      # rather than getting a cryptic "file cannot be empty" from the CLI.
+      - name: Verify dist layout
+        working-directory: artifacts/theme-preview
+        run: |
+          test -f dist/worker.js   || { echo "ERROR: dist/worker.js not found"; exit 1; }
+          test -d dist/client      || { echo "ERROR: dist/client/ not found"; exit 1; }
+          test -f dist/client/index.html || { echo "ERROR: dist/client/index.html not found"; exit 1; }
+          echo "dist layout OK:"
+          echo "  worker.js: $(wc -c < dist/worker.js) bytes"
+          echo "  client/: $(find dist/client -type f | wc -l) files"
+
+      # path points to the artifact root; the CLI finds dist/worker.js and
+      # dist/client/ automatically from there. No build_command is set because
+      # we already built above — the action skips its own build when omitted.
       - name: Deploy to Oxygen
         uses: shopify/oxygenctl-action@v4
         with:
+          path: "./artifacts/theme-preview"
           oxygen_deployment_token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
-          oxygen_worker_dir: "./artifacts/theme-preview/dist/worker"
-          oxygen_client_dir: "./artifacts/theme-preview/dist/public"
