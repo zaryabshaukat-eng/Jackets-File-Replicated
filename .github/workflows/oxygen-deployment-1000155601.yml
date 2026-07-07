@@ -14,6 +14,12 @@ jobs:
   deploy:
     name: Build & Deploy to Oxygen
     runs-on: ubuntu-latest
+    # Skip deploy on PRs from forks — they cannot access repo secrets,
+    # which would cause the oxygenctl step to fail with an auth error.
+    if: |
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
     permissions:
       contents: read
       deployments: write
