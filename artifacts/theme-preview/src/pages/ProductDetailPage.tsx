@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useLocation } from '../router';
-import { ALL_PRODUCTS, COLOR_MAP } from '../data/products';
+import { COLOR_MAP } from '../data/products';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
+import { useProduct, useProducts } from '../hooks/useShopify';
 
 const REVIEWS = [
   { name: 'James K.', rating: 5, date: 'June 2025', text: 'Absolutely love this jacket. The quality is exceptional — fits perfectly and looks even better in person.' },
@@ -29,11 +30,21 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
   );
 }
 
+function ProductImage({ src, alt, fallback, style }: { src?: string; alt: string; fallback: string; style?: React.CSSProperties }) {
+  const [err, setErr] = useState(false);
+  if (src && !err) {
+    return <img src={src} alt={alt} onError={() => setErr(true)} style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center', display:'block', ...style }} />;
+  }
+  return <div style={{ background: fallback, width:'100%', height:'100%', ...style }} />;
+}
+
 export default function ProductDetailPage() {
   const { handle } = useParams<{ handle: string }>();
   const [, navigate] = useLocation();
-  const { addItem, openCart } = useCart();
-  const product = ALL_PRODUCTS.find(p => p.handle === handle);
+  const { addItem } = useCart();
+
+  const { product, loading } = useProduct(handle);
+  const { products: allProducts } = useProducts({ collection: 'all' });
 
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize]   = useState('');
@@ -43,15 +54,24 @@ export default function ProductDetailPage() {
   const [qty, setQty]                     = useState(1);
 
   useEffect(() => {
-    if (product) {
-      setSelectedColor('');
-      setSelectedSize('');
-      setActiveImg(0);
-      setCartState('idle');
-      setError('');
-      setQty(1);
-    }
+    setSelectedColor('');
+    setSelectedSize('');
+    setActiveImg(0);
+    setCartState('idle');
+    setError('');
+    setQty(1);
   }, [handle]);
+
+  if (loading) {
+    return (
+      <div style={{ padding: '80px 0', textAlign: 'center', minHeight: '60vh' }}>
+        <div className="container">
+          <div style={{ display: 'inline-block', width: 48, height: 48, border: '3px solid #e0e0e0', borderTopColor: 'var(--clr-gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -65,40 +85,72 @@ export default function ProductDetailPage() {
     );
   }
 
-  const colors = product.colors.split(' ');
-  const sizes  = product.sizes.split(' ');
+  const colors = product.colors.split(' ').filter(Boolean);
+  const sizes  = product.sizes.split(' ').filter(Boolean);
   const onSale = !!product.compare && product.compare > product.price;
   const pct    = onSale ? Math.round((product.compare! - product.price) / product.compare! * 100) : 0;
   const avgRating = 4.6;
   const reviewCount = 47;
 
-  const imgVariants = [product.bg,
-    `linear-gradient(200deg,${product.bg.match(/#[0-9a-f]{6}/gi)?.[1] ?? '#111'},${product.bg.match(/#[0-9a-f]{6}/gi)?.[0] ?? '#222'})`,
-    `linear-gradient(280deg,${product.bg.match(/#[0-9a-f]{6}/gi)?.[0] ?? '#222'},#1a1208)`,
-    `linear-gradient(120deg,#111,${product.bg.match(/#[0-9a-f]{6}/gi)?.[1] ?? '#0a0a0a'})`,
+  // Images — use real Shopify images if available, fallback to gradients
+  const imgUrls: (string | undefined)[] = product.images && product.images.length > 0
+    ? product.images.slice(0, 4)
+    : [undefined, undefined, undefined, undefined];
+
+  const imgGradients = [
+    product.bg,
+    `linear-gradient(200deg,#111,#1a0a00)`,
+    `linear-gradient(280deg,#0a0a0a,#1a1208)`,
+    `linear-gradient(120deg,#111,#0a0a0a)`,
   ];
 
-  const related = ALL_PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const related = allProducts
+    .filter(p => p.category === product.category && p.id !== product.id)
+    .slice(0, 4);
+
+  // Find the best matching variant for the selected color/size
+  function getVariantForSelection(): string | undefined {
+    if (!product?.variants || product.variants.length === 0) return product?.variantId;
+    const match = product.variants.find(v => {
+      const opts = v.selectedOptions;
+      const colorOpt = opts.find(o => o.name.toLowerCase() === 'color' || o.name.toLowerCase() === 'colour');
+      const sizeOpt  = opts.find(o => o.name.toLowerCase() === 'size');
+      const colorMatch = !colorOpt || !selectedColor || colorOpt.value === selectedColor;
+      const sizeMatch  = !sizeOpt  || !selectedSize  || sizeOpt.value  === selectedSize;
+      return colorMatch && sizeMatch && v.availableForSale;
+    });
+    return match?.id ?? product?.variantId;
+  }
 
   function doAddToCart() {
-    addItem(product, selectedColor, selectedSize, qty);
+    const variantId = getVariantForSelection();
+    addItem(product!, selectedColor || colors[0] || '', selectedSize || sizes[0] || '', qty, variantId);
     setCartState('added');
     setError('');
     setTimeout(() => setCartState('idle'), 3000);
   }
 
   function handleAddToCart() {
-    if (!selectedColor || !selectedSize) {
+    if (colors.length > 0 && !selectedColor) {
       setCartState('picking');
-      setError(!selectedColor && !selectedSize ? 'Please select a colour and size.' : !selectedColor ? 'Please select a colour.' : 'Please select a size.');
+      setError(sizes.length > 0 && !selectedSize ? 'Please select a colour and size.' : 'Please select a colour.');
+      return;
+    }
+    if (sizes.length > 0 && !selectedSize) {
+      setCartState('picking');
+      setError('Please select a size.');
       return;
     }
     doAddToCart();
   }
 
   function confirmSelection() {
-    if (!selectedColor || !selectedSize) {
-      setError(!selectedColor && !selectedSize ? 'Please select a colour and size.' : !selectedColor ? 'Please select a colour.' : 'Please select a size.');
+    if (colors.length > 0 && !selectedColor) {
+      setError(sizes.length > 0 && !selectedSize ? 'Please select a colour and size.' : 'Please select a colour.');
+      return;
+    }
+    if (sizes.length > 0 && !selectedSize) {
+      setError('Please select a size.');
       return;
     }
     setCartState('idle');
@@ -135,14 +187,23 @@ export default function ProductDetailPage() {
 
           {/* Left — Images */}
           <div className="pdp-images">
-            <div className="pdp-images__main" style={{ background: imgVariants[activeImg], borderRadius: 8 }}>
+            <div className="pdp-images__main" style={{ borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
+              <ProductImage
+                src={imgUrls[activeImg]}
+                alt={product.title}
+                fallback={imgGradients[activeImg]}
+                style={{ position: 'absolute', inset: 0 }}
+              />
               {onSale && <span className="badge badge--sale" style={{ position: 'absolute', top: 16, left: 16, zIndex: 2 }}>-{pct}%</span>}
               {product.badge === 'new' && <span className="badge badge--new" style={{ position: 'absolute', top: 16, left: 16, zIndex: 2 }}>New</span>}
             </div>
             <div className="pdp-images__thumbs">
-              {imgVariants.map((bg, i) => (
+              {imgGradients.map((bg, i) => (
                 <button key={i} className={`pdp-thumb${activeImg === i ? ' pdp-thumb--active' : ''}`}
-                  style={{ background: bg }} onClick={() => setActiveImg(i)} aria-label={`View image ${i + 1}`} />
+                  style={{ overflow: 'hidden', position: 'relative' }}
+                  onClick={() => setActiveImg(i)} aria-label={`View image ${i + 1}`}>
+                  <ProductImage src={imgUrls[i]} alt={`${product.title} view ${i+1}`} fallback={bg} style={{ position: 'absolute', inset: 0 }} />
+                </button>
               ))}
             </div>
           </div>
@@ -162,52 +223,57 @@ export default function ProductDetailPage() {
             <div className="pdp-price-row">
               {onSale ? (
                 <>
-                  <span className="pdp-price pdp-price--sale">${product.price}.00</span>
-                  <span className="pdp-price pdp-price--compare">${product.compare}.00</span>
+                  <span className="pdp-price pdp-price--sale">${product.price.toFixed(2)}</span>
+                  <span className="pdp-price pdp-price--compare">${product.compare!.toFixed(2)}</span>
                   <span className="pdp-save-badge">Save {pct}%</span>
                 </>
               ) : (
-                <span className="pdp-price">${product.price}.00</span>
+                <span className="pdp-price">${product.price.toFixed(2)}</span>
               )}
             </div>
 
             <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--clr-mid)', marginBottom: 28, maxWidth: 480 }}>
-              A premium {product.category} jacket designed for those who demand both style and substance.
-              Crafted from high-quality materials, this piece delivers exceptional warmth, a tailored silhouette,
-              and lasting durability — season after season.
+              {product.description
+                ? product.description.slice(0, 240) + (product.description.length > 240 ? '…' : '')
+                : `A premium ${product.category} jacket designed for those who demand both style and substance. Crafted from high-quality materials, this piece delivers exceptional warmth, a tailored silhouette, and lasting durability — season after season.`
+              }
             </p>
 
             {/* Color Picker */}
-            <div className="pdp-option-group">
-              <div className="pdp-option-label">
-                <span>Colour</span>
-                {selectedColor && <span className="pdp-selected-value">{selectedColor}</span>}
+            {colors.length > 0 && (
+              <div className="pdp-option-group">
+                <div className="pdp-option-label">
+                  <span>Colour</span>
+                  {selectedColor && <span className="pdp-selected-value">{selectedColor}</span>}
+                </div>
+                <div className="pdp-color-swatches">
+                  {colors.map(c => (
+                    <button key={c} className={`pdp-color-swatch${selectedColor === c ? ' pdp-color-swatch--active' : ''}`}
+                      style={{ background: COLOR_MAP[c] ?? '#888' }} title={c}
+                      onClick={() => { setSelectedColor(c); setError(''); }}
+                      aria-label={c} aria-pressed={selectedColor === c} />
+                  ))}
+                </div>
               </div>
-              <div className="pdp-color-swatches">
-                {colors.map(c => (
-                  <button key={c} className={`pdp-color-swatch${selectedColor === c ? ' pdp-color-swatch--active' : ''}`}
-                    style={{ background: COLOR_MAP[c] ?? '#888' }} title={c}
-                    onClick={() => { setSelectedColor(c); setError(''); }}
-                    aria-label={c} aria-pressed={selectedColor === c} />
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* Size Picker */}
-            <div className="pdp-option-group">
-              <div className="pdp-option-label">
-                <span>Size</span>
-                {selectedSize && <span className="pdp-selected-value">{selectedSize}</span>}
-                <Link href="/pages/size-guide" style={{ fontSize: 12, color: 'var(--clr-gold)', marginLeft: 'auto' }}>Size Guide</Link>
+            {sizes.length > 0 && (
+              <div className="pdp-option-group">
+                <div className="pdp-option-label">
+                  <span>Size</span>
+                  {selectedSize && <span className="pdp-selected-value">{selectedSize}</span>}
+                  <Link href="/pages/size-guide" style={{ fontSize: 12, color: 'var(--clr-gold)', marginLeft: 'auto' }}>Size Guide</Link>
+                </div>
+                <div className="pdp-size-btns">
+                  {sizes.map(s => (
+                    <button key={s} className={`pdp-size-btn${selectedSize === s ? ' pdp-size-btn--active' : ''}`}
+                      onClick={() => { setSelectedSize(s); setError(''); }}
+                      aria-pressed={selectedSize === s}>{s}</button>
+                  ))}
+                </div>
               </div>
-              <div className="pdp-size-btns">
-                {sizes.map(s => (
-                  <button key={s} className={`pdp-size-btn${selectedSize === s ? ' pdp-size-btn--active' : ''}`}
-                    onClick={() => { setSelectedSize(s); setError(''); }}
-                    aria-pressed={selectedSize === s}>{s}</button>
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* Validation Error */}
             {error && (
@@ -260,7 +326,7 @@ export default function ProductDetailPage() {
             {/* Accordion Details */}
             <div className="pdp-accordion">
               {[
-                { label: 'Product Details', body: `Premium ${product.category} jacket with expert construction, quality hardware, and a tailored silhouette. Features inner lining, reinforced seams, and multiple pockets. Available in ${colors.join(', ')}.` },
+                { label: 'Product Details', body: product.description || `Premium ${product.category} jacket with expert construction, quality hardware, and a tailored silhouette. Features inner lining, reinforced seams, and multiple pockets. Available in ${colors.join(', ')}.` },
                 { label: 'Sizing & Fit', body: 'This style fits true to size. If you\'re between sizes, we recommend sizing up for a relaxed fit. See our Size Guide for detailed measurements. Model is 6\'1" wearing size L.' },
                 { label: 'Shipping & Returns', body: 'Free shipping on orders over $120. Standard delivery 5–8 business days. Express available at checkout. Returns accepted within 7 days — unworn, tags attached.' },
                 { label: 'Care Instructions', body: 'Spot clean where possible. Dry clean recommended for leather styles. For puffer jackets, machine wash on gentle cold cycle and tumble dry low with 2 clean tennis balls.' },
@@ -308,7 +374,7 @@ export default function ProductDetailPage() {
             <p className="section-label">You May Also Like</p>
             <h2 className="section-title" style={{ marginBottom: 32 }}>Related Jackets</h2>
             <div className="pdp-related__grid">
-              {related.map(p => <ProductCard key={p.id} product={p} />)}
+              {related.map(p => <ProductCard key={`${p.id}-${p.handle}`} product={p} />)}
             </div>
           </div>
         )}
@@ -325,40 +391,46 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Color + Size Modal (triggered when cart clicked without selection) */}
+      {/* Color + Size Modal */}
       {cartState === 'picking' && (
         <div className="pdp-modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setCartState('idle'); }}>
           <div className="pdp-modal" role="dialog" aria-modal="true" aria-label="Select options">
             <button className="pdp-modal__close" onClick={() => setCartState('idle')} aria-label="Close">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
-            <div style={{ width: 72, height: 72, background: product.bg, borderRadius: 6, marginBottom: 16 }} />
+            <div style={{ width: 72, height: 72, borderRadius: 6, marginBottom: 16, overflow: 'hidden' }}>
+              <ProductImage src={product.imageUrl} alt={product.title} fallback={product.bg} style={{ width: '100%', height: '100%' }} />
+            </div>
             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 400, marginBottom: 4 }}>{product.title}</h3>
             <p style={{ fontSize: 13, color: 'var(--clr-muted)', marginBottom: 24 }}>Please choose your options to continue</p>
 
-            <div className="pdp-option-group" style={{ marginBottom: 20 }}>
-              <div className="pdp-option-label">
-                <span>Colour</span>
-                {selectedColor && <span className="pdp-selected-value">{selectedColor}</span>}
+            {colors.length > 0 && (
+              <div className="pdp-option-group" style={{ marginBottom: 20 }}>
+                <div className="pdp-option-label">
+                  <span>Colour</span>
+                  {selectedColor && <span className="pdp-selected-value">{selectedColor}</span>}
+                </div>
+                <div className="pdp-color-swatches">
+                  {colors.map(c => (
+                    <button key={c} className={`pdp-color-swatch${selectedColor === c ? ' pdp-color-swatch--active' : ''}`}
+                      style={{ background: COLOR_MAP[c] ?? '#888' }} title={c}
+                      onClick={() => { setSelectedColor(c); setError(''); }} aria-label={c} />
+                  ))}
+                </div>
               </div>
-              <div className="pdp-color-swatches">
-                {colors.map(c => (
-                  <button key={c} className={`pdp-color-swatch${selectedColor === c ? ' pdp-color-swatch--active' : ''}`}
-                    style={{ background: COLOR_MAP[c] ?? '#888' }} title={c}
-                    onClick={() => { setSelectedColor(c); setError(''); }} aria-label={c} />
-                ))}
-              </div>
-            </div>
+            )}
 
-            <div className="pdp-option-group" style={{ marginBottom: 20 }}>
-              <div className="pdp-option-label"><span>Size</span>{selectedSize && <span className="pdp-selected-value">{selectedSize}</span>}</div>
-              <div className="pdp-size-btns">
-                {sizes.map(s => (
-                  <button key={s} className={`pdp-size-btn${selectedSize === s ? ' pdp-size-btn--active' : ''}`}
-                    onClick={() => { setSelectedSize(s); setError(''); }}>{s}</button>
-                ))}
+            {sizes.length > 0 && (
+              <div className="pdp-option-group" style={{ marginBottom: 20 }}>
+                <div className="pdp-option-label"><span>Size</span>{selectedSize && <span className="pdp-selected-value">{selectedSize}</span>}</div>
+                <div className="pdp-size-btns">
+                  {sizes.map(s => (
+                    <button key={s} className={`pdp-size-btn${selectedSize === s ? ' pdp-size-btn--active' : ''}`}
+                      onClick={() => { setSelectedSize(s); setError(''); }}>{s}</button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {error && (
               <div className="pdp-error" role="alert" style={{ marginBottom: 16 }}>

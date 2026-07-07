@@ -1,41 +1,46 @@
-name: Storefront 1000155601
-on: [push]
+name: Deployment to Oxygen
 
-permissions:
-  contents: read
-  deployments: write
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: oxygen-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
-    name: Deploy to Oxygen
-    timeout-minutes: 30
+    name: Build & Deploy to Oxygen
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
-          check-latest: true
+          node-version: 22
 
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          version: 10
 
+      # Install from the workspace root — pnpm-lock.yaml lives here,
+      # not inside the subfolder. npm ci was failing because there is
+      # no package-lock.json (this is a pnpm workspace).
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: Build and Publish to Oxygen
-        run: npx shopify hydrogen deploy
-        env:
-          SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
+      - name: Build & Deploy to Oxygen
+        id: deploy
+        uses: shopify/oxygenctl-action@v8
+        with:
+          token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
+          build_command: "pnpm --filter @workspace/theme-preview run build"
+          path: "./artifacts/theme-preview/dist/public"

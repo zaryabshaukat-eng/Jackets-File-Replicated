@@ -1,22 +1,64 @@
 import { useState } from 'react';
 import { Link } from '../router';
-import { COLOR_MAP, type Product } from '../data/products';
+import { COLOR_MAP } from '../data/products';
+import type { Product } from '../lib/shopify';
+import { useCart } from '../context/CartContext';
+
+function ProductImage({ product, style }: { product: Product; style?: React.CSSProperties }) {
+  const [imgError, setImgError] = useState(false);
+  if (product.imageUrl && !imgError) {
+    return (
+      <img
+        src={product.imageUrl}
+        alt={product.title}
+        onError={() => setImgError(true)}
+        style={{
+          width: '100%', height: '100%',
+          objectFit: 'cover', objectPosition: 'center',
+          display: 'block',
+          ...style,
+        }}
+      />
+    );
+  }
+  return <div style={{ background: product.bg, width: '100%', height: '100%', ...style }} />;
+}
 
 function AddToCartModal({ product, onClose }: { product: Product; onClose: () => void }) {
+  const { addItem } = useCart();
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize,  setSelectedSize]  = useState('');
   const [error, setError] = useState('');
   const [added, setAdded] = useState(false);
 
-  const colors = product.colors.split(' ');
-  const sizes  = product.sizes.split(' ');
+  const colors = product.colors.split(' ').filter(Boolean);
+  const sizes  = product.sizes.split(' ').filter(Boolean);
+
+  // Find the matching variant for checkout
+  function getVariantId(): string | undefined {
+    if (!product.variants || product.variants.length === 0) return product.variantId;
+    const match = product.variants.find(v => {
+      const opts = v.selectedOptions;
+      const colorOpt = opts.find(o => o.name.toLowerCase() === 'color' || o.name.toLowerCase() === 'colour');
+      const sizeOpt  = opts.find(o => o.name.toLowerCase() === 'size');
+      const colorMatch = !colorOpt || !selectedColor || colorOpt.value === selectedColor;
+      const sizeMatch  = !sizeOpt  || !selectedSize  || sizeOpt.value  === selectedSize;
+      return colorMatch && sizeMatch;
+    });
+    return match?.id ?? product.variantId;
+  }
 
   function confirm() {
-    if (!selectedColor || !selectedSize) {
-      setError(!selectedColor && !selectedSize ? 'Please select a colour and size.'
-        : !selectedColor ? 'Please select a colour.' : 'Please select a size.');
+    if (!selectedColor && colors.length > 0) {
+      setError(!selectedSize && sizes.length > 0 ? 'Please select a colour and size.' : 'Please select a colour.');
       return;
     }
+    if (!selectedSize && sizes.length > 0) {
+      setError('Please select a size.');
+      return;
+    }
+    const variantId = getVariantId();
+    addItem(product, selectedColor || colors[0] || '', selectedSize || sizes[0] || '', 1, variantId);
     setAdded(true);
     setTimeout(onClose, 1200);
   }
@@ -28,45 +70,51 @@ function AddToCartModal({ product, onClose }: { product: Product; onClose: () =>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
-        <div style={{ width: 72, height: 72, background: product.bg, borderRadius: 6, marginBottom: 16 }} />
+        <div style={{ width: 72, height: 72, borderRadius: 6, marginBottom: 16, overflow: 'hidden', flexShrink: 0 }}>
+          <ProductImage product={product} />
+        </div>
         <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 400, marginBottom: 4 }}>{product.title}</h3>
         <p style={{ fontSize: 13, color: 'var(--clr-muted)', marginBottom: 24 }}>
           {!!product.compare && product.compare > product.price
-            ? <><span style={{ color: 'var(--clr-error)', fontWeight: 600 }}>${product.price}</span> <span style={{ textDecoration: 'line-through', marginLeft: 6 }}>${product.compare}</span></>
-            : <span style={{ fontWeight: 600 }}>${product.price}.00</span>
+            ? <><span style={{ color: 'var(--clr-error)', fontWeight: 600 }}>${product.price.toFixed(2)}</span> <span style={{ textDecoration: 'line-through', marginLeft: 6 }}>${product.compare.toFixed(2)}</span></>
+            : <span style={{ fontWeight: 600 }}>${product.price.toFixed(2)}</span>
           }
         </p>
 
-        <div className="pdp-option-group" style={{ marginBottom: 20 }}>
-          <div className="pdp-option-label">
-            <span>Colour</span>
-            {selectedColor && <span className="pdp-selected-value">{selectedColor}</span>}
+        {colors.length > 0 && (
+          <div className="pdp-option-group" style={{ marginBottom: 20 }}>
+            <div className="pdp-option-label">
+              <span>Colour</span>
+              {selectedColor && <span className="pdp-selected-value">{selectedColor}</span>}
+            </div>
+            <div className="pdp-color-swatches">
+              {colors.map(c => (
+                <button key={c}
+                  className={`pdp-color-swatch${selectedColor === c ? ' pdp-color-swatch--active' : ''}`}
+                  style={{ background: COLOR_MAP[c] ?? '#888' }} title={c}
+                  onClick={() => { setSelectedColor(c); setError(''); }}
+                  aria-label={c} aria-pressed={selectedColor === c} />
+              ))}
+            </div>
           </div>
-          <div className="pdp-color-swatches">
-            {colors.map(c => (
-              <button key={c}
-                className={`pdp-color-swatch${selectedColor === c ? ' pdp-color-swatch--active' : ''}`}
-                style={{ background: COLOR_MAP[c] ?? '#888' }} title={c}
-                onClick={() => { setSelectedColor(c); setError(''); }}
-                aria-label={c} aria-pressed={selectedColor === c} />
-            ))}
-          </div>
-        </div>
+        )}
 
-        <div className="pdp-option-group" style={{ marginBottom: 20 }}>
-          <div className="pdp-option-label">
-            <span>Size</span>
-            {selectedSize && <span className="pdp-selected-value">{selectedSize}</span>}
+        {sizes.length > 0 && (
+          <div className="pdp-option-group" style={{ marginBottom: 20 }}>
+            <div className="pdp-option-label">
+              <span>Size</span>
+              {selectedSize && <span className="pdp-selected-value">{selectedSize}</span>}
+            </div>
+            <div className="pdp-size-btns">
+              {sizes.map(s => (
+                <button key={s}
+                  className={`pdp-size-btn${selectedSize === s ? ' pdp-size-btn--active' : ''}`}
+                  onClick={() => { setSelectedSize(s); setError(''); }}
+                  aria-pressed={selectedSize === s}>{s}</button>
+              ))}
+            </div>
           </div>
-          <div className="pdp-size-btns">
-            {sizes.map(s => (
-              <button key={s}
-                className={`pdp-size-btn${selectedSize === s ? ' pdp-size-btn--active' : ''}`}
-                onClick={() => { setSelectedSize(s); setError(''); }}
-                aria-pressed={selectedSize === s}>{s}</button>
-            ))}
-          </div>
-        </div>
+        )}
 
         {error && (
           <div className="pdp-error" role="alert" style={{ marginBottom: 16 }}>
@@ -95,6 +143,8 @@ function AddToCartModal({ product, onClose }: { product: Product; onClose: () =>
   );
 }
 
+export { ProductImage };
+
 export default function ProductCard({ product, className = '' }: { product: Product; className?: string }) {
   const [showModal, setShowModal] = useState(false);
   const onSale = !!product.compare && product.compare > product.price;
@@ -111,7 +161,9 @@ export default function ProductCard({ product, className = '' }: { product: Prod
       >
         <div className="product-card__image-wrap">
           <Link href={`/products/${product.handle}`} className="product-card__img-link" aria-label={`View ${product.title}`}>
-            <div className="product-card__placeholder-img" style={{ background: product.bg }} />
+            <div className="product-card__placeholder-img" style={{ overflow: 'hidden', position: 'relative' }}>
+              <ProductImage product={product} style={{ position: 'absolute', inset: 0 }} />
+            </div>
           </Link>
           <div className="product-card__badges">
             {onSale && <span className="badge badge--sale">-{pct}%</span>}
@@ -131,18 +183,18 @@ export default function ProductCard({ product, className = '' }: { product: Prod
         <div className="product-card__info">
           <h3 className="product-card__title"><Link href={`/products/${product.handle}`}>{product.title}</Link></h3>
           <div className="product-card__colors">
-            {product.colors.split(' ').slice(0,5).map(c => (
+            {product.colors.split(' ').filter(Boolean).slice(0, 5).map(c => (
               <span key={c} className="product-card__color-dot" title={c} style={{ background: COLOR_MAP[c] ?? '#888' }} />
             ))}
           </div>
           <div className="product-card__price-row">
             {onSale ? (
               <>
-                <span className="product-card__price product-card__price--sale">${product.price}.00</span>
-                <span className="product-card__price product-card__price--compare">${product.compare}.00</span>
+                <span className="product-card__price product-card__price--sale">${product.price.toFixed(2)}</span>
+                <span className="product-card__price product-card__price--compare">${product.compare!.toFixed(2)}</span>
               </>
             ) : (
-              <span className="product-card__price">${product.price}.00</span>
+              <span className="product-card__price">${product.price.toFixed(2)}</span>
             )}
           </div>
         </div>

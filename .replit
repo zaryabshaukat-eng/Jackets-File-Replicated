@@ -11,6 +11,23 @@ env = { "CI" = "true" }
 [workflows]
 runButton = "Project"
 
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=20716 BASE_PATH=/ pnpm --filter @workspace/theme-preview run dev"
+
 [agent]
 stack = "PNPM_WORKSPACE"
 expertMode = true
@@ -18,3 +35,14 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID = "301c86eb-6103-4b86-934f-45ba53486b04"
+PUBLIC_CUSTOMER_ACCOUNT_API_URL = "https://shopify.com/70019842099"
+PUBLIC_STOREFRONT_API_TOKEN = "7ae536739329a1c7cfe1757e1ed31f71"
+PUBLIC_STOREFRONT_ID = "1000155601"
+PUBLIC_STORE_DOMAIN = "s7zmv3-1k.myshopify.com"
+SHOPIFY_STOREFRONT_API_URL = "https://s7zmv3-1k.myshopify.com/api/2024-04/graphql.json"
+SHOP_ID = "70019842099"
