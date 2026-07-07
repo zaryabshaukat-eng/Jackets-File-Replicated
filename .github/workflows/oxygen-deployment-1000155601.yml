@@ -47,6 +47,6 @@ jobs:
         id: deploy
         uses: shopify/oxygenctl-action@v4
         with:
-          token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
+          oxygen_deployment_token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
           build_command: "pnpm --filter @workspace/theme-preview run build"
           path: "./artifacts/theme-preview/dist/public"
