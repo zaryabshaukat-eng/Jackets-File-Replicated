@@ -38,15 +38,19 @@ jobs:
           version: 10
 
       # Install from the workspace root — pnpm-lock.yaml lives here,
-      # not inside the subfolder. npm ci was failing because there is
-      # no package-lock.json (this is a pnpm workspace).
+      # not inside the subfolder.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build & Deploy to Oxygen
-        id: deploy
+      # Build explicitly as a separate step so failures are visible.
+      # PORT and BASE_PATH are only needed by the dev server, not the build.
+      - name: Build storefront
+        run: pnpm --filter @workspace/theme-preview run build
+
+      # Deploy the pre-built output to Oxygen.
+      # build_command is intentionally omitted — the build already ran above.
+      - name: Deploy to Oxygen
         uses: shopify/oxygenctl-action@v4
         with:
           oxygen_deployment_token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
-          build_command: "pnpm --filter @workspace/theme-preview run build"
           path: "./artifacts/theme-preview/dist/public"
