@@ -42,15 +42,38 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Build explicitly as a separate step so failures are visible.
-      # PORT and BASE_PATH are only needed by the dev server, not the build.
+      # Build the Vite SPA — outputs to artifacts/theme-preview/dist/public
       - name: Build storefront
         run: pnpm --filter @workspace/theme-preview run build
 
-      # Deploy the pre-built output to Oxygen.
-      # build_command is intentionally omitted — the build already ran above.
+      # Oxygen is a server-side (Cloudflare Workers) platform and requires a
+      # worker entry file. This minimal worker serves the Vite SPA: static
+      # assets are served from Oxygen's CDN binding; all other routes fall back
+      # to index.html so client-side routing works correctly.
+      - name: Create Oxygen SPA worker
+        run: |
+          mkdir -p artifacts/theme-preview/dist/worker
+          cat > artifacts/theme-preview/dist/worker/index.js << 'WORKEREOF'
+          export default {
+            async fetch(request, env) {
+              const url = new URL(request.url);
+              // Serve static assets (JS, CSS, images, fonts…)
+              const staticRes = await env.assets.fetch(request).catch(() => null);
+              if (staticRes && staticRes.status !== 404) return staticRes;
+              // All other routes → index.html (enables client-side routing)
+              return env.assets.fetch(
+                new Request(new URL('/index.html', url.origin), {
+                  headers: request.headers,
+                })
+              );
+            },
+          };
+          WORKEREOF
+
+      # Deploy: tell Oxygen where the worker and the client assets are separately.
       - name: Deploy to Oxygen
         uses: shopify/oxygenctl-action@v4
         with:
           oxygen_deployment_token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
-          path: "./artifacts/theme-preview/dist/public"
+          oxygen_worker_dir: "./artifacts/theme-preview/dist/worker"
+          oxygen_client_dir: "./artifacts/theme-preview/dist/public"
