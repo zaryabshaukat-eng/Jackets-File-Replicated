@@ -41,8 +41,38 @@ jobs:
       - name: Build storefront
         run: pnpm --filter @workspace/theme-preview run build
 
+      - name: Assemble Oxygen dist layout
+        working-directory: artifacts/theme-preview
+        run: |
+          mv dist/public dist/client
+
+          cat > dist/worker.js << 'WORKEREOF'
+          export default {
+            async fetch(request, env) {
+              const url = new URL(request.url);
+              const staticRes = await env.assets.fetch(request).catch(() => null);
+              if (staticRes && staticRes.status !== 404) return staticRes;
+              return env.assets.fetch(
+                new Request(new URL('/index.html', url.origin), {
+                  headers: request.headers,
+                })
+              );
+            },
+          };
+          WORKEREOF
+
+      - name: Verify dist layout
+        working-directory: artifacts/theme-preview
+        run: |
+          test -f dist/worker.js        || { echo "ERROR: dist/worker.js not found"; exit 1; }
+          test -d dist/client           || { echo "ERROR: dist/client/ not found"; exit 1; }
+          test -f dist/client/index.html || { echo "ERROR: dist/client/index.html not found"; exit 1; }
+          echo "dist layout OK:"
+          echo "  worker.js: $(wc -c < dist/worker.js) bytes"
+          echo "  client/: $(find dist/client -type f | wc -l) files"
+
       - name: Deploy to Oxygen
         uses: shopify/oxygenctl-action@v4
         with:
+          path: "./artifacts/theme-preview"
           oxygen_deployment_token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000155601 }}
-          path: "./artifacts/theme-preview/dist/public"
