@@ -1,0 +1,61 @@
+<div class="content-page">
+  <div class="container" style="max-width:900px; padding-top:64px; padding-bottom:64px; min-height:60vh;">
+    <nav class="breadcrumb" style="margin-bottom:32px;">
+      <ul class="breadcrumb__list">
+        <li class="breadcrumb__item"><a href="{{ shop.url }}">Home</a></li>
+        <li class="breadcrumb__item">/</li>
+        <li class="breadcrumb__item breadcrumb__item--current">About</li>
+      </ul>
+    </nav>
+    <p class="section-label" style="margin-bottom:12px;">Our Story</p>
+    <h1 style="font-family:var(--font-serif);font-size:clamp(32px,4vw,52px);font-weight:400;margin-bottom:40px;line-height:1.2;">About Universal Jackets</h1>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;">
+      <div style="height:400px;background:linear-gradient(160deg,#0a0a0a,#1a1208);border-radius:8px;"></div>
+      <div class="rte" style="font-size:15px;line-height:1.8;color:var(--clr-mid);max-width:720px;">
+        <p>Founded in New York in 2015, Universal Jackets was born from a single belief: <strong>great outerwear should be universal</strong> — accessible, timeless, and built to last.</p>
+        <p>We design every jacket with two questions in mind: <em>Does it look exceptional?</em> and <em>Will it still look exceptional in ten years?</em></p>
+        <p>Our team of designers travels globally, sourcing the finest materials — premium leather from Argentinian tanneries, Japanese selvedge denim, Merino wool from New Zealand — and works with master craftspeople to produce garments worthy of those materials.</p>
+        <h3>Our Values</h3>
+        <ul>
+          <li><strong>Quality over quantity</strong> — we release fewer styles each season, but each one is exceptional.</li>
+          <li><strong>Sustainable practices</strong> — we partner with suppliers who share our commitment to ethical production.</li>
+          <li><strong>Radical transparency</strong> — we believe you deserve to know how and where your jacket was made.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:80px;padding-top:64px;border-top:1px solid var(--clr-light-border);">
+      <p class="section-label" style="margin-bottom:16px;">By The Numbers</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:32px;">
+        <div style="text-align:center;">
+          <p style="font-family:var(--font-serif);font-size:52px;font-weight:300;color:var(--clr-gold);line-height:1;">2015</p>
+          <p style="font-size:13px;color:var(--clr-muted);margin-top:8px;">Founded in NYC</p>
+        </div>
+        <div style="text-align:center;">
+          <p style="font-family:var(--font-serif);font-size:52px;font-weight:300;color:var(--clr-gold);line-height:1;">50+</p>
+          <p style="font-size:13px;color:var(--clr-muted);margin-top:8px;">Jacket Styles</p>
+        </div>
+        <div style="text-align:center;">
+          <p style="font-family:var(--font-serif);font-size:52px;font-weight:300;color:var(--clr-gold);line-height:1;">42</p>
+          <p style="font-size:13px;color:var(--clr-muted);margin-top:8px;">Countries Shipped</p>
+        </div>
+        <div style="text-align:center;">
+          <p style="font-family:var(--font-serif);font-size:52px;font-weight:300;color:var(--clr-gold);line-height:1;">10K+</p>
+          <p style="font-size:13px;color:var(--clr-muted);margin-top:8px;">Happy Customers</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media (max-width: 767px) {
+    .content-page [style*="grid-template-columns:1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+    .content-page [style*="height:400px"] {
+      height: 220px !important;
+    }
+  }
+</style>

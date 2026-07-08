@@ -1,0 +1,53 @@
+<div class="content-page">
+  <div class="container" style="max-width:900px;padding-top:64px;padding-bottom:64px;min-height:60vh;">
+    <nav class="breadcrumb" style="margin-bottom:32px;">
+      <ul class="breadcrumb__list">
+        <li class="breadcrumb__item"><a href="{{ shop.url }}">Home</a></li>
+        <li class="breadcrumb__item">/</li>
+        <li class="breadcrumb__item breadcrumb__item--current">Lookbook</li>
+      </ul>
+    </nav>
+    <p class="section-label" style="margin-bottom:12px;">Seasonal Editorial</p>
+    <h1 style="font-family:var(--font-serif);font-size:clamp(32px,4vw,52px);font-weight:400;margin-bottom:40px;line-height:1.2;">Lookbook — Autumn / Winter 2025</h1>
+
+    <div class="rte" style="font-size:15px;line-height:1.8;color:var(--clr-mid);max-width:720px;">
+      <p>Our latest editorial explores the intersection of urban grit and refined craftsmanship. Shot across New York, London, and Tokyo.</p>
+    </div>
+
+    <div class="lookbook-grid" style="margin-top:40px;">
+      <div class="lookbook-grid__item lookbook-grid__item--tall" style="background:linear-gradient(160deg,hsl(0,20%,8%),hsl(20,30%,15%));border-radius:6px;"></div>
+      <div class="lookbook-grid__item" style="background:linear-gradient(160deg,hsl(40,20%,8%),hsl(60,30%,15%));border-radius:6px;"></div>
+      <div class="lookbook-grid__item" style="background:linear-gradient(160deg,hsl(80,20%,8%),hsl(100,30%,15%));border-radius:6px;"></div>
+      <div class="lookbook-grid__item" style="background:linear-gradient(160deg,hsl(120,20%,8%),hsl(140,30%,15%));border-radius:6px;"></div>
+      <div class="lookbook-grid__item lookbook-grid__item--tall" style="background:linear-gradient(160deg,hsl(160,20%,8%),hsl(180,30%,15%));border-radius:6px;"></div>
+      <div class="lookbook-grid__item" style="background:linear-gradient(160deg,hsl(200,20%,8%),hsl(220,30%,15%));border-radius:6px;"></div>
+      <div class="lookbook-grid__item" style="background:linear-gradient(160deg,hsl(240,20%,8%),hsl(260,30%,15%));border-radius:6px;"></div>
+      <div class="lookbook-grid__item" style="background:linear-gradient(160deg,hsl(280,20%,8%),hsl(300,30%,15%));border-radius:6px;"></div>
+      <div class="lookbook-grid__item lookbook-grid__item--tall" style="background:linear-gradient(160deg,hsl(320,20%,8%),hsl(340,30%,15%));border-radius:6px;"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:64px;">
+      <a href="{{ shop.url }}/collections/all" class="btn btn-primary">Shop the Collection</a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .lookbook-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .lookbook-grid__item {
+    height: 260px;
+  }
+  .lookbook-grid__item--tall {
+    height: 480px;
+    grid-row: span 2;
+  }
+  @media (max-width: 600px) {
+    .lookbook-grid { grid-template-columns: repeat(2, 1fr); }
+    .lookbook-grid__item--tall { height: 300px; }
+    .lookbook-grid__item { height: 160px; }
+  }
+</style>

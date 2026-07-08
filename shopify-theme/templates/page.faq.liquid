@@ -1,0 +1,70 @@
+<div class="content-page">
+  <div class="container" style="max-width:900px;padding-top:64px;padding-bottom:64px;min-height:60vh;">
+    <nav class="breadcrumb" style="margin-bottom:32px;">
+      <ul class="breadcrumb__list">
+        <li class="breadcrumb__item"><a href="{{ shop.url }}">Home</a></li>
+        <li class="breadcrumb__item">/</li>
+        <li class="breadcrumb__item breadcrumb__item--current">FAQ</li>
+      </ul>
+    </nav>
+    <p class="section-label" style="margin-bottom:12px;">Help Centre</p>
+    <h1 style="font-family:var(--font-serif);font-size:clamp(32px,4vw,52px);font-weight:400;margin-bottom:40px;line-height:1.2;">Frequently Asked Questions</h1>
+
+    <div class="faq-list" style="max-width:720px;">
+      <details class="faq-item">
+        <summary class="faq-item__summary">What sizes do you offer? <span class="faq-item__icon">+</span></summary>
+        <p class="faq-item__answer">We offer XS through XXL in most styles, with some styles available up to 3XL. See our Size Guide for detailed measurements.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-item__summary">Do you ship internationally? <span class="faq-item__icon">+</span></summary>
+        <p class="faq-item__answer">Yes! We ship to 42 countries. International orders typically take 10–14 business days. Duties and taxes may apply.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-item__summary">How do I care for my leather jacket? <span class="faq-item__icon">+</span></summary>
+        <p class="faq-item__answer">Apply a leather conditioner every 3–6 months, avoid prolonged exposure to rain, and store in a cool, dry place in a breathable bag. See our full care guide in the Journal.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-item__summary">Can I customise a jacket? <span class="faq-item__icon">+</span></summary>
+        <p class="faq-item__answer">Absolutely. Visit our Custom Design page to submit a request. We can add patches, embroidery, custom colour combinations, and more.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-item__summary">What's your return policy? <span class="faq-item__icon">+</span></summary>
+        <p class="faq-item__answer">We accept returns within 7 days of delivery. Items must be unworn with tags attached. Visit our Returns page for full details.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-item__summary">How do I track my order? <span class="faq-item__icon">+</span></summary>
+        <p class="faq-item__answer">You'll receive a tracking number by email once your order ships. You can also log into your account to see order status.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-item__summary">Are your jackets true to size? <span class="faq-item__icon">+</span></summary>
+        <p class="faq-item__answer">Generally yes, but it varies by style. Leather jackets tend to run slightly slim; we recommend sizing up if between sizes. Each product page has a detailed size chart.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-item__summary">Do you offer wholesale? <span class="faq-item__icon">+</span></summary>
+        <p class="faq-item__answer">Yes, we work with select retailers. Contact us at wholesale@universaljackets.com for information.</p>
+      </details>
+    </div>
+  </div>
+</div>
+
+<style>
+  .faq-list { display: flex; flex-direction: column; gap: 0; }
+  .faq-item { border-bottom: 1px solid var(--clr-light-border); }
+  .faq-item__summary {
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    font-size: 15px;
+    color: var(--clr-black);
+    transition: color var(--transition-fast);
+  }
+  .faq-item__summary::-webkit-details-marker { display: none; }
+  .faq-item__summary:hover { color: var(--clr-gold); }
+  .faq-item__icon { font-size: 20px; opacity: .5; flex-shrink: 0; margin-left: 16px; transition: transform var(--transition-base); }
+  .faq-item[open] .faq-item__icon { transform: rotate(45deg); }
+  .faq-item__answer { margin-top: 0; margin-bottom: 20px; font-size: 14px; line-height: 1.7; color: var(--clr-mid); }
+</style>

@@ -1,0 +1,118 @@
+<div class="content-page">
+  <div class="container" style="max-width:900px;padding-top:64px;padding-bottom:64px;min-height:60vh;">
+    <nav class="breadcrumb" style="margin-bottom:32px;">
+      <ul class="breadcrumb__list">
+        <li class="breadcrumb__item"><a href="{{ shop.url }}">Home</a></li>
+        <li class="breadcrumb__item">/</li>
+        <li class="breadcrumb__item breadcrumb__item--current">Custom Design</li>
+      </ul>
+    </nav>
+    <p class="section-label" style="margin-bottom:12px;">Made For You</p>
+    <h1 style="font-family:var(--font-serif);font-size:clamp(32px,4vw,52px);font-weight:400;margin-bottom:40px;line-height:1.2;">Design Your Own Jacket</h1>
+
+    <div class="custom-design-page__layout">
+      <div>
+        <div class="rte" style="font-size:15px;line-height:1.8;color:var(--clr-mid);max-width:720px;">
+          <p>Create a truly one-of-a-kind jacket. Our bespoke service lets you choose every detail — from the material and colour to the hardware, lining, patches, and embroidery.</p>
+          <h3>What You Can Customise</h3>
+          <ul>
+            <li>Jacket style (bomber, moto, trench, puffer, etc.)</li>
+            <li>Material and colour</li>
+            <li>Hardware finish (gold, silver, antique brass)</li>
+            <li>Lining pattern and colour</li>
+            <li>Custom embroidery (text, logos, motifs)</li>
+            <li>Patches and appliqués</li>
+            <li>Custom sizing</li>
+          </ul>
+          <h3>Turnaround Time</h3>
+          <p>Custom orders take 3–4 weeks to produce. Rush orders may be available — contact us for details.</p>
+        </div>
+      </div>
+
+      <div>
+        {%- form 'contact', id: 'CustomDesignPageForm' -%}
+          {%- if form.posted_successfully? -%}
+            <div class="form-success" role="alert">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Design request submitted! We'll be in touch within 2 business days.
+            </div>
+          {%- endif -%}
+          {%- if form.errors -%}
+            <div class="form-error" role="alert">{{ form.errors | default_errors }}</div>
+          {%- endif -%}
+
+          <div class="form-field">
+            <label for="cdp-name" class="form-label">Name *</label>
+            <input type="text" id="cdp-name" name="contact[name]" required class="form-input" autocomplete="name" value="{{ form.name }}">
+          </div>
+          <div class="form-field">
+            <label for="cdp-email" class="form-label">Email *</label>
+            <input type="email" id="cdp-email" name="contact[email]" required class="form-input" autocomplete="email" value="{{ form.email }}">
+          </div>
+          <div class="form-field">
+            <label for="cdp-style" class="form-label">Jacket Style *</label>
+            <select id="cdp-style" name="contact[jacket_style]" required class="form-select">
+              <option value="">Select style…</option>
+              <option>Bomber</option>
+              <option>Moto Leather</option>
+              <option>Puffer</option>
+              <option>Trench Coat</option>
+              <option>Denim</option>
+              <option>Windbreaker</option>
+              <option>Sherpa Fleece</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="cdp-details" class="form-label">Design Details *</label>
+            <textarea id="cdp-details" name="contact[body]" required class="form-textarea" rows="6" placeholder="Describe your dream jacket in as much detail as possible…">{{ form.body }}</textarea>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Upload Reference Image</label>
+            <div class="file-upload-area" id="cdpFileUploadArea">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              <p>Click to browse or drag &amp; drop</p>
+              <input type="file" id="cdp-file" name="contact[attachment]" accept="image/*,.pdf" class="file-upload-input">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Request</button>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .custom-design-page__layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+  }
+  @media (max-width: 767px) {
+    .custom-design-page__layout { grid-template-columns: 1fr; gap: 40px; }
+  }
+</style>
+
+<script>
+  (function() {
+    var area = document.getElementById('cdpFileUploadArea');
+    var input = document.getElementById('cdp-file');
+    if (!area || !input) return;
+    area.addEventListener('click', function() { input.click(); });
+    area.addEventListener('dragover', function(e) { e.preventDefault(); area.style.borderColor = 'var(--clr-black)'; });
+    area.addEventListener('dragleave', function() { area.style.borderColor = ''; });
+    area.addEventListener('drop', function(e) {
+      e.preventDefault();
+      area.style.borderColor = '';
+      if (e.dataTransfer.files.length) {
+        input.files = e.dataTransfer.files;
+        area.querySelector('p').textContent = e.dataTransfer.files[0].name;
+      }
+    });
+    input.addEventListener('change', function() {
+      if (input.files.length) {
+        area.querySelector('p').textContent = input.files[0].name;
+      }
+    });
+  })();
+</script>

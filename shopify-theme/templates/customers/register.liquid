@@ -1,6 +1,7 @@
 <div class="auth-page">
   <div class="auth-page__split">
-    <div class="auth-page__deco" aria-hidden="true">
+    <!-- Left decorative panel — matches React: background linear-gradient(160deg,#0d1a2a,#0a0a0a) -->
+    <div class="auth-page__deco" aria-hidden="true" style="background:linear-gradient(160deg,#0d1a2a,#0a0a0a);">
       <div class="auth-page__deco-inner">
         <span class="auth-deco__logo">UNIVERSAL JACKETS</span>
         <p class="auth-deco__quote">"Join the community of bold dressers."</p>
@@ -11,51 +12,47 @@
         </div>
       </div>
     </div>
+
+    <!-- Right form panel -->
     <div class="auth-page__form-panel">
       <div class="auth-page__form-inner">
-        <a href="{{ shop.url }}" class="auth-page__back">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-          Back to Store
-        </a>
+        <a href="{{ shop.url }}" class="auth-page__back">← Back to store</a>
+
         <h1 class="auth-page__title">Create Account</h1>
-        <p class="auth-page__sub">Join Universal Jackets to track orders, save favourites, and get early access to new drops.</p>
+        <p class="auth-page__sub">Join Universal Jackets for exclusive access.</p>
 
         {%- form 'create_customer', id: 'CreateCustomerForm' -%}
           {%- if form.errors -%}
             <div class="form-error" role="alert">{{ form.errors | default_errors }}</div>
           {%- endif -%}
 
-          <div class="form-row form-row--2col">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div class="form-field">
-              <label for="FirstName" class="form-label">First name</label>
-              <input type="text" name="customer[first_name]" id="FirstName" autocomplete="given-name" class="form-input" placeholder="First" value="{{ form.first_name }}" required>
+              <label for="FirstName" class="form-label">First Name</label>
+              <input type="text" name="customer[first_name]" id="FirstName" autocomplete="given-name" class="form-input" value="{{ form.first_name }}" required>
             </div>
             <div class="form-field">
-              <label for="LastName" class="form-label">Last name</label>
-              <input type="text" name="customer[last_name]" id="LastName" autocomplete="family-name" class="form-input" placeholder="Last" value="{{ form.last_name }}" required>
+              <label for="LastName" class="form-label">Last Name</label>
+              <input type="text" name="customer[last_name]" id="LastName" autocomplete="family-name" class="form-input" value="{{ form.last_name }}" required>
             </div>
           </div>
 
           <div class="form-field">
-            <label for="Email" class="form-label">Email address</label>
-            <input type="email" name="customer[email]" id="Email" autocomplete="email" class="form-input" placeholder="you@example.com" value="{{ form.email }}" required>
+            <label for="Email" class="form-label">Email</label>
+            <input type="email" name="customer[email]" id="Email" autocomplete="email" class="form-input" value="{{ form.email }}" required>
           </div>
 
           <div class="form-field">
             <label for="CreatePassword" class="form-label">Password</label>
-            <div class="form-input-group">
-              <input type="password" name="customer[password]" id="CreatePassword" autocomplete="new-password" class="form-input" placeholder="Min. 8 characters" required>
-              <button type="button" class="form-input-toggle" id="togglePassword" aria-label="Show/hide password">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
-            </div>
+            <input type="password" name="customer[password]" id="CreatePassword" autocomplete="new-password" class="form-input" placeholder="Min 8 characters" required>
           </div>
 
           <button type="submit" class="btn btn-primary btn-full">Create Account</button>
         {%- endform -%}
 
-        <div class="auth-page__divider"><span>or</span></div>
-        <p class="auth-page__switch">Already have an account? <a href="{{ routes.account_login_url }}" class="auth-page__switch-link">Sign in</a></p>
+        <p style="text-align:center; margin-top:24px; font-size:13px; color:var(--clr-muted);">
+          Already have an account? <a href="{{ routes.account_login_url }}" style="color:var(--clr-gold);">Sign in</a>
+        </p>
       </div>
     </div>
   </div>

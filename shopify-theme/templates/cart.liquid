@@ -1,128 +1,138 @@
-<div class="cart-page">
-  <div class="container">
-    <h1 class="cart-page__title">Shopping Cart</h1>
+<div style="padding: 64px 0; min-height: 60vh;">
+  <div class="container" style="max-width: 900px;">
+
+    <nav style="font-size:12px; opacity:.6; margin-bottom:32px;">
+      <a href="{{ shop.url }}">Home</a>
+      <span style="margin:0 8px;">/</span>
+      <span>Cart</span>
+    </nav>
+
+    <h1 style="font-family:var(--font-serif); font-size:clamp(32px,4vw,52px); font-weight:400; margin-bottom:40px; line-height:1.2;">Your Cart</h1>
 
     {%- if cart.item_count > 0 -%}
-      <div class="cart-page__layout">
-        <div class="cart-page__items">
-          {%- form 'cart', cart, id: 'CartForm' -%}
-            <table class="cart-table">
-              <thead>
-                <tr>
-                  <th colspan="2">Product</th>
-                  <th>Price</th>
-                  <th>Quantity</th>
-                  <th>Total</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {%- for item in cart.items -%}
-                  <tr class="cart-table__row">
-                    <td class="cart-table__img">
-                      <a href="{{ item.url }}">
-                        {%- if item.image -%}
-                          <img src="{{ item.image | image_url: width: 120, height: 150, crop: 'center' }}" alt="{{ item.title | escape }}" width="80" height="100" loading="lazy">
-                        {%- endif -%}
-                      </a>
-                    </td>
-                    <td class="cart-table__info">
-                      <a href="{{ item.url }}" class="cart-table__name">{{ item.product.title }}</a>
-                      {%- unless item.product.has_only_default_variant -%}
-                        <p class="cart-table__variant">{{ item.variant.title }}</p>
-                      {%- endunless -%}
-                    </td>
-                    <td class="cart-table__price">{{ item.original_price | money }}</td>
-                    <td class="cart-table__qty">
-                      <div class="quantity-selector">
-                        <button type="button" class="quantity-selector__btn" onclick="this.nextElementSibling.stepDown(); this.closest('form').submit()">−</button>
-                        <input type="number" name="updates[]" value="{{ item.quantity }}" min="0" max="10" class="quantity-selector__input" onchange="this.form.submit()">
-                        <button type="button" class="quantity-selector__btn" onclick="this.previousElementSibling.stepUp(); this.closest('form').submit()">+</button>
-                      </div>
-                    </td>
-                    <td class="cart-table__total">{{ item.line_price | money }}</td>
-                    <td class="cart-table__remove">
-                      <a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity=0" aria-label="Remove {{ item.title | escape }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                      </a>
-                    </td>
-                  </tr>
-                {%- endfor -%}
-              </tbody>
-            </table>
-          {%- endform -%}
-        </div>
+      <div style="display:grid; grid-template-columns:1fr 360px; gap:48px; align-items:start;" class="cart-page__layout">
 
-        <div class="cart-page__summary">
-          <div class="cart-summary">
-            <h2 class="cart-summary__title">Order Summary</h2>
-            <div class="cart-summary__row">
-              <span>Subtotal</span>
-              <span>{{ cart.total_price | money }}</span>
-            </div>
-            <div class="cart-summary__row cart-summary__row--muted">
-              <span>Shipping</span>
-              <span>Calculated at checkout</span>
-            </div>
-            {%- if cart.total_price < 12000 -%}
-              <div class="cart-summary__shipping-msg">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                Add <strong>{{ 12000 | minus: cart.total_price | money }}</strong> more for free shipping!
+        <!-- Line items -->
+        <div>
+          {%- for item in cart.items -%}
+            <div style="display:flex; gap:24px; padding:24px 0; border-bottom:1px solid var(--clr-light-border); align-items:start;">
+
+              <!-- Thumbnail -->
+              <a href="{{ item.url }}" style="flex-shrink:0;">
+                {%- if item.image -%}
+                  <img
+                    src="{{ item.image | image_url: width: 200, height: 240, crop: 'center' }}"
+                    alt="{{ item.title | escape }}"
+                    width="100"
+                    height="120"
+                    loading="lazy"
+                    style="width:100px; height:120px; object-fit:cover; border-radius:6px; display:block;">
+                {%- else -%}
+                  <div style="width:100px; height:120px; background:linear-gradient(160deg,#1a1a2e,#0d0d1a); border-radius:6px;"></div>
+                {%- endif -%}
+              </a>
+
+              <!-- Item details -->
+              <div style="flex:1;">
+                <h3 style="font-family:var(--font-serif); font-size:20px; font-weight:400; margin-bottom:6px;">
+                  <a href="{{ item.url }}" style="color:var(--clr-black);">{{ item.product.title }}</a>
+                </h3>
+                <p style="font-size:13px; color:var(--clr-muted); margin-bottom:12px;">
+                  {%- unless item.product.has_only_default_variant -%}
+                    {{ item.variant.title }}
+                  {%- endunless -%}
+                  {%- for option in item.options_with_values -%}
+                    {%- if option.name == 'Size' -%}Size: {{ option.value }}{%- endif -%}
+                    {%- if option.name == 'Color' %} · Color: {{ option.value }}{%- endif -%}
+                  {%- endfor -%}
+                </p>
+
+                <!-- Qty stepper + remove -->
+                <div style="display:flex; align-items:center; gap:16px;">
+                  <div style="display:flex; align-items:center; border:1px solid var(--clr-light-border); border-radius:4px;">
+                    <form action="{{ routes.cart_change_url }}" method="post" style="display:contents;">
+                      <input type="hidden" name="id" value="{{ item.variant_id }}">
+                      <input type="hidden" name="quantity" value="{{ item.quantity | minus: 1 }}">
+                      <button type="submit" style="padding:6px 12px; border:none; background:none; cursor:pointer; font-size:18px; line-height:1;" aria-label="Decrease quantity">−</button>
+                    </form>
+                    <span style="padding:6px 16px; border-left:1px solid var(--clr-light-border); border-right:1px solid var(--clr-light-border); font-size:14px;">{{ item.quantity }}</span>
+                    <form action="{{ routes.cart_change_url }}" method="post" style="display:contents;">
+                      <input type="hidden" name="id" value="{{ item.variant_id }}">
+                      <input type="hidden" name="quantity" value="{{ item.quantity | plus: 1 }}">
+                      <button type="submit" style="padding:6px 12px; border:none; background:none; cursor:pointer; font-size:18px; line-height:1;" aria-label="Increase quantity">+</button>
+                    </form>
+                  </div>
+                  <a href="{{ routes.cart_change_url }}?id={{ item.variant_id }}&quantity=0" style="background:none; border:none; cursor:pointer; font-size:12px; color:var(--clr-muted); text-decoration:underline;">Remove</a>
+                </div>
               </div>
-            {%- else -%}
-              <div class="cart-summary__shipping-msg cart-summary__shipping-msg--free">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                You qualify for <strong>free shipping!</strong>
-              </div>
-            {%- endif -%}
-            <div class="cart-summary__total">
-              <span>Total</span>
-              <span>{{ cart.total_price | money }}</span>
+
+              <!-- Line price -->
+              <p style="font-weight:600; font-family:var(--font-serif); font-size:18px; flex-shrink:0;">{{ item.line_price | money }}</p>
+
             </div>
-            <a href="{{ routes.checkout }}" class="btn btn-primary btn-full cart-summary__checkout">
-              Proceed to Checkout
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </a>
-            <a href="{{ shop.url }}/collections/all" class="cart-summary__continue">← Continue Shopping</a>
+          {%- endfor -%}
+
+          <div style="margin-top:32px;">
+            <a href="{{ shop.url }}/collections/all" class="btn btn-outline">Continue Shopping</a>
           </div>
         </div>
+
+        <!-- Order summary sidebar -->
+        <div style="background:var(--clr-bg-soft); padding:32px; border-radius:8px; position:sticky; top:calc(var(--announcement-h) + var(--header-h) + 24px);">
+          <h2 style="font-family:var(--font-serif); font-size:22px; font-weight:400; margin-bottom:24px;">Order Summary</h2>
+
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px;">
+            <span style="color:var(--clr-muted);">Subtotal</span>
+            <span style="font-weight:500;">{{ cart.total_price | money }}</span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px;">
+            <span style="color:var(--clr-muted);">Shipping</span>
+            <span style="font-weight:500;">
+              {%- if cart.total_price >= 12000 -%}
+                Free
+              {%- else -%}
+                Calculated at checkout
+              {%- endif -%}
+            </span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px;">
+            <span style="color:var(--clr-muted);">Tax (est.)</span>
+            <span style="font-weight:500;">Calculated at checkout</span>
+          </div>
+
+          <div style="border-top:2px solid var(--clr-black); margin-top:16px; padding-top:16px; display:flex; justify-content:space-between; font-weight:700; font-size:16px;">
+            <span>Total</span>
+            <span>{{ cart.total_price | money }}</span>
+          </div>
+
+          <a href="{{ routes.checkout }}" class="btn btn-primary btn-full" style="margin-top:24px; display:flex; align-items:center; justify-content:center; gap:8px;">
+            Proceed to Checkout
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+
+          <div style="margin-top:16px; text-align:center; font-size:12px; color:var(--clr-muted);">🔒 Secure checkout — SSL encrypted</div>
+        </div>
+
       </div>
+
     {%- else -%}
-      <div class="empty-state" style="padding:100px 0;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        <h2>Your cart is empty</h2>
-        <p>Looks like you haven't added anything yet.</p>
-        <a href="{{ shop.url }}/collections/all" class="btn btn-primary">Start Shopping</a>
+
+      <!-- Empty cart state -->
+      <div style="text-align:center; padding:80px 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.3; margin-bottom:24px;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <h2 style="font-family:var(--font-serif); font-size:28px; font-weight:400; margin-bottom:12px;">Your cart is empty</h2>
+        <p style="color:var(--clr-muted); margin-bottom:32px;">Looks like you haven't added anything yet.</p>
+        <a href="{{ shop.url }}/collections/all" class="btn btn-primary" style="display:inline-flex;">Start Shopping</a>
       </div>
+
     {%- endif -%}
   </div>
 </div>
 
 <style>
-.cart-page { padding: 48px 0 80px; }
-.cart-page__title { font-family: var(--font-serif); font-size: clamp(28px,4vw,48px); font-weight:300; margin-bottom:40px; }
-.cart-page__layout { display: grid; grid-template-columns: 1fr 360px; gap: 48px; align-items: start; }
-@media(max-width:900px){ .cart-page__layout { grid-template-columns:1fr; } }
-.cart-table { width:100%; border-collapse:collapse; font-size:14px; }
-.cart-table thead { border-bottom:2px solid var(--clr-light-border); }
-.cart-table th { padding:12px 8px; text-align:left; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--clr-muted); }
-.cart-table td { padding:20px 8px; vertical-align:middle; border-bottom:1px solid var(--clr-light-border); }
-.cart-table__img img { border-radius:var(--radius-sm); object-fit:cover; }
-.cart-table__name { font-weight:600; color:var(--clr-black); }
-.cart-table__name:hover { color:var(--clr-gold); }
-.cart-table__variant { font-size:12px; color:var(--clr-muted); margin-top:4px; }
-.cart-table__price,.cart-table__total { font-weight:600; }
-.cart-table__remove a { color:var(--clr-muted); transition:color var(--transition-fast); line-height:0; display:inline-flex; }
-.cart-table__remove a:hover { color:var(--clr-error); }
-.cart-summary { background:var(--clr-bg-soft); border-radius:var(--radius-lg); padding:28px; position:sticky; top:120px; }
-.cart-summary__title { font-family:var(--font-serif); font-size:22px; font-weight:400; margin-bottom:20px; }
-.cart-summary__row { display:flex; justify-content:space-between; font-size:14px; padding:10px 0; border-bottom:1px solid var(--clr-light-border); }
-.cart-summary__row--muted { color:var(--clr-muted); }
-.cart-summary__shipping-msg { font-size:12px; color:var(--clr-mid); padding:12px 0; display:flex; align-items:center; gap:6px; }
-.cart-summary__shipping-msg--free { color:var(--clr-success); }
-.cart-summary__shipping-msg svg { flex-shrink:0; }
-.cart-summary__total { display:flex; justify-content:space-between; font-size:16px; font-weight:700; padding:16px 0; border-top:2px solid var(--clr-black); margin-top:4px; }
-.cart-summary__checkout { margin-top:20px; }
-.cart-summary__continue { display:block; text-align:center; font-size:12px; color:var(--clr-muted); margin-top:14px; text-decoration:underline; }
-.cart-summary__continue:hover { color:var(--clr-black); }
+@media (max-width: 900px) {
+  .cart-page__layout { grid-template-columns: 1fr !important; }
+}
 </style>

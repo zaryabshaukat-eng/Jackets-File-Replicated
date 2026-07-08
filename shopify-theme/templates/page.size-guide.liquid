@@ -1,0 +1,82 @@
+<div class="content-page">
+  <div class="container" style="max-width:900px;padding-top:64px;padding-bottom:64px;min-height:60vh;">
+    <nav class="breadcrumb" style="margin-bottom:32px;">
+      <ul class="breadcrumb__list">
+        <li class="breadcrumb__item"><a href="{{ shop.url }}">Home</a></li>
+        <li class="breadcrumb__item">/</li>
+        <li class="breadcrumb__item breadcrumb__item--current">Size Guide</li>
+      </ul>
+    </nav>
+    <p class="section-label" style="margin-bottom:12px;">Fit Guide</p>
+    <h1 style="font-family:var(--font-serif);font-size:clamp(32px,4vw,52px);font-weight:400;margin-bottom:40px;line-height:1.2;">Size Guide</h1>
+
+    <div class="rte" style="font-size:15px;line-height:1.8;color:var(--clr-mid);max-width:720px;">
+      <p>All measurements are in inches. For the best fit, take your measurements and compare to the chart below. If you're between sizes, we generally recommend sizing up for a relaxed fit or sizing down for a slim fit.</p>
+    </div>
+
+    <div style="overflow-x:auto;margin-top:32px;">
+      <table class="size-guide-table">
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th>Chest</th>
+            <th>Shoulder</th>
+            <th>Sleeve</th>
+            <th>Length</th>
+            <th>Waist</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="size-guide-table__row--even">
+            <td><strong>XS</strong></td><td>34–36</td><td>16.5</td><td>32</td><td>27</td><td>28–30</td>
+          </tr>
+          <tr>
+            <td><strong>S</strong></td><td>36–38</td><td>17</td><td>32.5</td><td>27.5</td><td>30–32</td>
+          </tr>
+          <tr class="size-guide-table__row--even">
+            <td><strong>M</strong></td><td>38–40</td><td>17.5</td><td>33</td><td>28</td><td>32–34</td>
+          </tr>
+          <tr>
+            <td><strong>L</strong></td><td>40–42</td><td>18</td><td>33.5</td><td>28.5</td><td>34–36</td>
+          </tr>
+          <tr class="size-guide-table__row--even">
+            <td><strong>XL</strong></td><td>42–44</td><td>18.5</td><td>34</td><td>29</td><td>36–38</td>
+          </tr>
+          <tr>
+            <td><strong>XXL</strong></td><td>44–46</td><td>19</td><td>34.5</td><td>29.5</td><td>38–40</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rte" style="font-size:15px;line-height:1.8;color:var(--clr-mid);max-width:720px;">
+      <p style="margin-top:32px;"><strong>Note:</strong> Leather jackets tend to run slim. If you're between sizes, size up. Puffer coats have a relaxed, oversized fit by design.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .size-guide-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .size-guide-table thead tr {
+    background: var(--clr-black);
+    color: #fff;
+  }
+  .size-guide-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: .06em;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+  .size-guide-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--clr-light-border);
+  }
+  .size-guide-table__row--even td { background: var(--clr-bg-soft); }
+  .size-guide-table tbody tr:not(.size-guide-table__row--even) td { background: #fff; }
+</style>

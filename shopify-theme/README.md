@@ -87,7 +87,27 @@ The Shopify admin panel (your-store.myshopify.com/admin) handles:
 - **Products** — Add products with images, variants (Color, Size), compare-at price for sale badge
 - **Collections** — Bomber Jackets, Leather Jackets, Puffer Jackets, Denim Jackets, Trench Coats, Windbreakers, New In, Bestsellers
 - **Theme Editor** — Customize all section settings without touching code
-- **Pages** — About, Lookbook, Contact, Shipping, Returns, Size Guide, Custom Design, FAQ
+- **Pages** — See table below for exact handles and alternate templates to assign in Shopify Admin
+
+### Page Setup (Shopify Admin → Pages)
+
+Create each Page in Shopify Admin and assign the listed alternate template via the "Theme template" dropdown on the right-hand side of the page editor:
+
+| Page Title          | Handle (URL slug) | Alternate Template            |
+|---------------------|-------------------|-------------------------------|
+| About               | `about`           | `page.about`                  |
+| Contact             | `contact`         | `page.contact`                |
+| Shipping & Delivery | `shipping`        | `page.shipping`               |
+| Returns & Refunds   | `returns`         | `page.returns`                |
+| FAQ                 | `faq`             | `page.faq`                    |
+| Size Guide          | `size-guide`      | `page.size-guide`             |
+| Lookbook            | `lookbook`        | `page.lookbook`               |
+| Custom Design       | `custom-design`   | `page.custom-design`          |
+| Wholesale & Trade   | `wholesale`       | `page.wholesale`              |
+| Privacy Policy      | `privacy`         | `page.privacy`                |
+| Terms of Service    | `terms`           | `page.terms`                  |
+
+> **Note:** The "Handle" must match exactly (lowercase, hyphenated). Shopify auto-generates it from the title but double-check it in the SEO section of the page editor. The page body content field can be left blank — all copy is hardcoded in each template.
 - **Blog** — Add articles under the "Journal" blog handle
 - **Navigation** — Build collection menus with subcategories
 
