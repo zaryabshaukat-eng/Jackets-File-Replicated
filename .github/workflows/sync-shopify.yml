@@ -1,0 +1,49 @@
+name: Sync Shopify Theme Files to New Repo
+
+on:
+  push:
+    branches:
+      - main # Change to 'master' if your main branch is called master
+    paths:
+      - 'shopify-theme/**' # This tells it to only run when files inside shopify-theme change
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out your main repository (Jackets-File-Replicated)
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+        with:
+          path: source-repo
+
+      # Step 2: Check out your specific target repository using the token
+      - name: Checkout Target Repository
+        uses: actions/checkout@v4
+        with:
+          repository: zaryabshaukat-eng/checksubconnection
+          token: ${{ secrets.TARGET_REPO_PAT }}
+          path: target-repo
+
+      # Step 3: Copy only the contents to the new repo root and push
+      - name: Copy Files and Push
+        run: |
+          # Clear existing files in the target repo (except the hidden .git folder)
+          find target-repo -maxdepth 1 -not -name '.git' -not -name 'target-repo' -exec rm -rf {} +
+          
+          # Copy everything INSIDE shopify-theme directly to the root of the target repo
+          cp -a source-repo/shopify-theme/. target-repo/
+          
+          # Configure Git, commit, and push
+          cd target-repo
+          git config user.name "GitHub Action Bot"
+          git config user.email "action@github.com"
+          git add .
+          
+          # Only commit if there are actual changes detected
+          if git diff-index --quiet HEAD; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-sync update from Jackets-File-Replicated/shopify-theme"
+            git push origin main # Change to 'master' if your target repo uses master
+          fi
