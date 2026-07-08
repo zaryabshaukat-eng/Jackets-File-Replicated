@@ -6,6 +6,7 @@ on:
       - main # Change to 'master' if your main branch is called master
     paths:
       - 'shopify-theme/**' # This tells it to only run when files inside shopify-theme change
+      workflow_dispatch: # <-- ADD THIS EXACT LINE
 
 jobs:
   sync:
